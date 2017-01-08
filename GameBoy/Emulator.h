@@ -72,6 +72,8 @@ private:
 	// LCD
 	void updateGraphics(int cycles);
 	void setLCDStatus();
+	bool isLCDEnabled() const;
+	void DMATransfer(BYTE data);
 
 	BYTE m_CartridgeMemory[0x200000];
 	BYTE m_Rom[0x10000];

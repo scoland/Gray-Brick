@@ -182,6 +182,10 @@ void Emulator::writeMemory(WORD address, BYTE data)
 	{
 		m_Rom[address] = 0;
 	}
+	else if (address == 0xFF46)
+	{
+		DMATransfer(data);
+	}
 	// At this point we can just write the data to memory
 	else
 	{
@@ -485,7 +489,7 @@ void Emulator::setLCDStatus()
 	BYTE mode = 0;
 	bool reqInt = false;
 
-	// if we're inside vblank
+	// Mode 1 V-Blank
 	if (currentLine >= 144)
 	{
 		mode = 1;
@@ -498,7 +502,7 @@ void Emulator::setLCDStatus()
 	{
 		int mode2bounds = 456 - 80;
 		int mode3bounds = mode2bounds - 172;
-		// mode 2
+		// mode 2 (first 80 cycles) Searching OAM-RAM
 		if (m_ScanlineCounter >= mode2bounds)
 		{
 			mode = 2;
@@ -506,14 +510,14 @@ void Emulator::setLCDStatus()
 			status = CLEARBIT(status, 0);
 			reqInt = ISBITSET(status, 5);
 		}
-		// mode 3
+		// mode 3 (172 cycles) Transferring data to LCD drivers
 		else if (m_ScanlineCounter >= mode3bounds)
 		{
 			mode = 3;
 			status = SETBIT(status, 1);
 			status = SETBIT(status, 0);
 		}
-		//mode 0
+		//mode 0 H-Blank (Remaining cycles)
 		else
 		{
 			mode = 0;
@@ -539,4 +543,24 @@ void Emulator::setLCDStatus()
 	}
 
 	writeMemory(0xFF41, status);
+}
+
+bool Emulator::isLCDEnabled() const
+{
+	return ISBITSET(readMemory(0xFF40), 7);
+}
+
+
+// OAM DMA. Basically a circuit designed to copy really fast. In this case, copy sprite data really fast.
+// Writing to this register launches a DMA transfer from ROM or RAM to OAM memory (sprite attribute table). 
+// The written value specifies the transfer source address divided by 100
+void Emulator::DMATransfer(BYTE data)
+{
+	WORD address = data << 8; // source address is data * 100
+
+	// Iterate through length of OAM
+	for (int i = 0; i < 0xA0; i++)
+	{
+		writeMemory(0xFE00 + i, readMemory(address + i));
+	}
 }

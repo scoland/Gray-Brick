@@ -75,6 +75,14 @@ private:
 	bool isLCDEnabled() const;
 	void DMATransfer(BYTE data);
 
+	// Graphics
+	void drawScanLine();
+	void renderTiles();
+
+	// CPU
+	int executeNextOpcode();
+	int executeOpcode(BYTE opcode);
+
 	BYTE m_CartridgeMemory[0x200000];
 	BYTE m_Rom[0x10000];
 

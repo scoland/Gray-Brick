@@ -564,3 +564,153 @@ void Emulator::DMATransfer(BYTE data)
 		writeMemory(0xFE00 + i, readMemory(address + i));
 	}
 }
+
+void Emulator::drawScanLine()
+{
+	BYTE control = readMemory(0xFF40);
+
+	// If BG Display is enabled
+	if (ISBITSET(control, 0))
+	{
+		renderTiles();
+	}
+
+	// If sprites are enabled
+	if (ISBITSET(control, 1))
+	{
+		renderSprites();
+	}
+}
+
+void Emulator::renderTiles()
+{
+	// locate tile in memory region 0x8000 - 0x8FFF
+	const WORD memoryRegion = 0x8000;
+	const int sizeOfTileInMemory = 16;
+
+	WORD tileDataAddress = memoryRegion + (tileIdentifier * sizeOfTileInMemory);
+
+	// locate tile in memory region 0x8800 - 0x97FF
+	const WORD memoryRegion = 0x800;
+	const int sizeOfTileInMemory = 16;
+	const int offset = 128;
+
+	WORD tileDataAddress = memoryRegion + ((tileIdentifier + offset) * sizeOfTileInMemory);
+
+	WORD tileData = 0;
+	WORD backgroundMemory = 0;
+	bool unsig = true;
+
+	// where to draw the viewbox and the window
+	BYTE scrollY = readMemory(0xFF42);
+	BYTE scrollX = readMemory(0xFF43);
+	BYTE windowY = readMemory(0xFF4A);
+	BYTE windowX = readMemory(0xFF4B) - 7; // god only knows why this is - 7 but it is
+
+	BYTE lcdControl = readMemory(0xFF40);
+
+	bool usingWindow = false;
+
+	// is the window display enabled?
+	if (ISBITSET(lcdControl, 5))
+	{
+		// is the current scanline we're drawing within the windows Y pos?
+		if (windowY <= readMemory(0xFF44))
+			usingWindow = true;
+	}
+	
+	// which tile memory region are we using?
+	if (ISBITSET(lcdControl, 4))
+	{
+		tileData = 0x8000;
+	}
+	else
+	{
+		// This is the one that uses signed bytes
+		tileData = 0x8800;
+		unsig = false;
+	}
+
+	if (usingWindow == false)
+	{
+		// we're drawing the background, so which background memory region are we using?
+		if (ISBITSET(lcdControl, 3))
+		{
+			backgroundMemory = 0x9C00;
+		}
+		else
+		{
+			backgroundMemory = 0x9800;
+		}
+	}
+	else
+	{
+		// we're drawing the window, so which window memory region are we using?
+		if (ISBITSET(lcdControl, 6))
+			backgroundMemory = 0x9C00;
+		else
+			backgroundMemory = 0x9800;
+	}
+
+	BYTE yPos = 0;
+	// yPos is used to calculate which of the 32 vertical tiles the current scanline is drawing
+	if (!usingWindow)
+		yPos = scrollY + readMemory(0xFF44);
+	else
+		yPos = readMemory(0xFF44) - windowY;
+
+	// which of the 8 vertical pixels of the current tile is the scanline on?
+	WORD tileRow = (((BYTE)(yPos / 8)) * 32);
+
+	// time to start drawing the 160 horizontal pixels for this scanline
+	for (int pixel = 0; pixel < 160; pixel++)
+	{
+		BYTE xPos = pixel + scrollX;
+
+		// translate the current x pos to window space if necessary
+		if (usingWindow)
+		{
+			if (pixel >= windowX)
+			{
+				xPos = pixel - windowX;
+			}
+		}
+	}
+
+	// which of the 32 horizontal tiles does the xPos fall within?
+	WORD tileCol = (xPos / 8);
+	SIGNED_WORD  tileNum;
+
+	// get the tile identity number. This can either be signed or unsigned.
+	WORD tileAddress = backgroundMemory + tileRow + tileCol;
+	if (unsig)
+		tileNum = (BYTE)readMemory(tileAddress);
+	else
+		tileNum = (SIGNED_BYTE)readMemory(tileAddress);
+
+	// deduce where this tile location is in memory.
+	WORD tileLocation = tileData;
+
+	if (unsig)
+		tileLocation += (tileNum * 16);
+	else
+		tileLocation += ((tileNum + 128) * 16);
+}
+
+int Emulator::executeNextOpcode() 
+{
+	int res = 0;
+	BYTE opcode = readMemory(m_ProgramCounter);
+	m_ProgramCounter++;
+	res = executeOpcode(opcode);
+	return res;
+}
+
+int Emulator::executeNextOpcode(BYTE opcode) 
+{
+	switch (opcode)
+	{
+	default:
+		break;
+	}
+}

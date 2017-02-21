@@ -86,6 +86,13 @@ private:
 	int executeOpcode(BYTE opcode);
 	void CPU_CALL(bool useCondition, int flag, bool condition);
 	void CPU_JUMP(bool useCondition, int flag, bool condition);
+	void CPU_8BIT_LOAD(BYTE& reg);
+	void CPU_16BIT_LOAD(WORD& reg);
+	void CPU_REG_LOAD(BYTE& reg, BYTE value);
+	void CPU_REG_LOAD_ROM(BYTE& reg, WORD address);
+	void CPU_16BIT_INC(WORD& reg);
+	void CPU_16BIT_DEC(WORD& reg);
+	
 	void pushWordOntoStack(WORD word);
 
 	BYTE m_CartridgeMemory[0x200000];

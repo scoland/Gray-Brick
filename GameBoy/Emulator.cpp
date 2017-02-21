@@ -734,12 +734,35 @@ int Emulator::executeOpcode(BYTE opcode)
 {
 	switch (opcode)
 	{
-	//no-op
+	// no-op
 	case 0x00: return 4;
-	// jumps
-	case 0xC3: CPU_JUMP(0, false, 0); return 12;
-	case 0xCD: CPU_CALL(0, false, 0); break;
 
+	// Loads
+	case 0x06: CPU_8BIT_LOAD(m_RegisterBC.hi); return 8;
+	case 0x0E: CPU_8BIT_LOAD(m_RegisterBC.lo); return 8;
+	case 0x16: CPU_8BIT_LOAD(m_RegisterDE.hi); return 8;
+	case 0x1E: CPU_8BIT_LOAD(m_RegisterDE.lo); return 8;
+	case 0x26: CPU_8BIT_LOAD(m_RegisterHL.hi); return 8;
+	case 0x2E: CPU_8BIT_LOAD(m_RegisterHL.lo); return 8;
+
+	case 0x2A: CPU_REG_LOAD_ROM(m_RegisterAF.hi, m_RegisterHL.reg); CPU_16BIT_INC(m_RegisterHL.reg); return 8;
+
+	case 0x01: CPU_16BIT_LOAD(m_RegisterBC.reg); return 12;
+	case 0x11: CPU_16BIT_LOAD(m_RegisterDE.reg); return 12;
+	case 0x21: CPU_16BIT_LOAD(m_RegisterHL.reg); return 12;
+	case 0x31: CPU_16BIT_LOAD(m_StackPointer.reg); return 12;
+
+	case 0x7F: CPU_REG_LOAD(m_RegisterAF.hi, m_RegisterAF.hi); return 4;
+	case 0x47: CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterAF.hi); return 4;
+	case 0x4F: CPU_REG_LOAD(m_RegisterBC.lo, m_RegisterAF.hi); return 4;
+	case 0x57: CPU_REG_LOAD(m_RegisterDE.hi, m_RegisterAF.hi); return 4;
+	case 0x5F: CPU_REG_LOAD(m_RegisterDE.lo, m_RegisterAF.hi); return 4;
+	case 0x67: CPU_REG_LOAD(m_RegisterHL.hi, m_RegisterAF.hi); return 4;
+	case 0x6F: CPU_REG_LOAD(m_RegisterHL.lo, m_RegisterAF.hi); return 4;
+
+	// Jumps
+	case 0xC3: CPU_JUMP(0, false, 0); return 12;
+	case 0xCD: CPU_CALL(0, false, 0); return 12;
 	default:
 		printf("Unknown opcode: ", opcode);
 		break;
@@ -772,6 +795,39 @@ void Emulator::CPU_JUMP(bool useCondition, int flag, bool condition)
 		return;
 	}
 
+}
+
+void Emulator::CPU_8BIT_LOAD(BYTE& reg)
+{
+	BYTE byte = readMemory(m_ProgramCounter);
+	m_ProgramCounter++;
+	reg = byte;
+}
+
+void Emulator::CPU_16BIT_LOAD(WORD& reg) {
+	WORD word = readWord();
+	m_ProgramCounter += 2;
+	reg = word;
+}
+
+void Emulator::CPU_REG_LOAD(BYTE& reg, BYTE value)
+{
+	reg = value;
+}
+
+void Emulator::CPU_REG_LOAD_ROM(BYTE& reg, WORD address)
+{
+	reg = readMemory(address);
+}
+
+void Emulator::CPU_16BIT_INC(WORD& reg)
+{
+	reg++;
+}
+
+void Emulator::CPU_16BIT_DEC(WORD& reg)
+{
+	reg--;
 }
 
 void Emulator::pushWordOntoStack(WORD word)

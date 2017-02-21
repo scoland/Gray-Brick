@@ -9,8 +9,12 @@ Emulator * emulator;
 int main()
 {
 	emulator = new Emulator();
-
 	emulator->loadRom();
+
+	while (true) 
+	{
+		emulator->update();
+	}
     return 0;
 }
 

@@ -20,11 +20,11 @@ typedef short SIGNED_WORD;
 
 // Timer counter. When this overflows (bigger than 0xFF) it will be reset to TMA
 // and an interrupt will be requested
-#define TIMA 0xFF05;
+const BYTE TIMA = 0xFF05;
 // Timer Modulo. Data to be loaded when TIMA overflows
-#define TMA 0xFF06;
+const BYTE TMA = 0xFF06;
 // Timer Control. Sets the frequency TIMA is counted at
-#define TMC 0xFF07;
+const BYTE TMC = 0xFF07;
 
 // Number of Hz the DMG clock runs at
 #define CLOCKSPEED 4194304;
@@ -52,17 +52,19 @@ private:
 	BYTE readMemory(WORD address) const;
 	void writeMemory(WORD address, BYTE data);
 	void handleBanking(WORD address, BYTE data);
-	void ROMBankEnable(WORD address, BYTE data);
+	void RAMBankEnable(WORD address, BYTE data);
 	void changeLoROMBank(BYTE data);
 	void changeHiROMBank(BYTE data);
 	void RAMBankChange(BYTE data);
 	void changeROMRAMMode(BYTE data);
+	WORD readWord() const;
 
 	// Timer
 	void updateTimers(int cycles);
 	BYTE getClockFreq() const;
 	void setClockFreq();
 	void dividerRegister(int cycles);
+	bool isClockEnabled() const;
 	
 	// Interrupt
 	void requestInterrupt(int id);
@@ -82,6 +84,9 @@ private:
 	// CPU
 	int executeNextOpcode();
 	int executeOpcode(BYTE opcode);
+	void CPU_CALL(bool useCondition, int flag, bool condition);
+	void CPU_JUMP(bool useCondition, int flag, bool condition);
+	void pushWordOntoStack(WORD word);
 
 	BYTE m_CartridgeMemory[0x200000];
 	BYTE m_Rom[0x10000];

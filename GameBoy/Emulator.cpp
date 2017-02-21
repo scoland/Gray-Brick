@@ -14,6 +14,7 @@ Emulator::~Emulator()
 
 void Emulator::loadRom()
 {
+	resetCPU();
 	// sets cartridge memory to 0
 	memset(m_CartridgeMemory, 0, sizeof(m_CartridgeMemory));
 
@@ -21,11 +22,13 @@ void Emulator::loadRom()
 	FILE * in;
 
 	// open file, flag 'rb' means 'read binary'
-	in = fopen("Tetris.gb", "rb");
+	in = fopen("ld.gb", "rb");
 
 	// Put rom into memory
 	fread(m_CartridgeMemory, 1, 0x200000, in);
 	fclose(in);
+
+	memcpy(&m_Rom[0x0], &m_CartridgeMemory[0], 0x8000); // this is read only and never changes
 }
 
 void Emulator::update()
@@ -36,18 +39,18 @@ void Emulator::update()
 	while (cyclesThisUpdate < MAXCYCLES)
 	{
 		// ExecuteNextOpcode will return the number of cycles the operation took to execute
-		int cycles = ExecuteNextOpcode();
+		int cycles = executeNextOpcode();
 		cyclesThisUpdate += cycles;
 
 		// Timer and graphics are passed the number of cycles the opcode took to execute
 		// This is so they can update at the same rate as the CPU
-		UpdateTimers(cycles);
-		UpdateGraphics(cycles);
+		// UpdateTimers(cycles);
+		// UpdateGraphics(cycles);
 
-		DoInterrupts();
+		// DoInterrupts();
 	}
 
-	RenderScreen();
+	// RenderScreen();
 
 }
 
@@ -139,7 +142,7 @@ void Emulator::writeMemory(WORD address, BYTE data)
 	if (address < 0x8000)
 	{
 		// This write is an instruction meant for the MBC
-		HandleBanking(address, data);
+		handleBanking(address, data);
 	}
 	// Writing to switchable RAM bank only possible when m_EnableRAM is true
 	else if (address >= 0xA000 && address <= 0xBFFF)
@@ -171,6 +174,10 @@ void Emulator::writeMemory(WORD address, BYTE data)
 		{
 			setClockFreq();
 		}
+	}
+	else if (address == 0xFF02 && data == 0x81)
+	{
+		printf("Output: ", readMemory(0xFF01));
 	}
 	// Trap divider register
 	else if (address == 0xFF04)
@@ -216,6 +223,15 @@ BYTE Emulator::readMemory(WORD address) const
 	return m_Rom[address];
 }
 
+// Read a WORD from memory, starting at the PC
+WORD Emulator::readWord() const
+{
+	WORD res = readMemory(m_ProgramCounter + 1);
+	res = res << 8;
+	res |= readMemory(m_ProgramCounter);
+	return res;
+}
+
 void Emulator::handleBanking(WORD address, BYTE data)
 {
 	if (address < 0x2000)
@@ -257,14 +273,15 @@ void Emulator::handleBanking(WORD address, BYTE data)
 	}
 }
 
-void Emulator::ROMBankEnable(WORD address, BYTE data)
+void Emulator::RAMBankEnable(WORD address, BYTE data)
 {
 	// In MBC2 the fourth bit needs to be 0 to enable/disable RAM
 	if (m_MBC2)
 	{
-		if (testBit(address, 4) == 1) return;
+		// bit 4 must be zero
+		if (ISBITSET(address, 4) == 1) return;
 	}
-
+	
 	BYTE testData = data & 0xF;
 	if (testData == 0xA)
 	{
@@ -327,7 +344,7 @@ void Emulator::changeROMRAMMode(BYTE data)
 		m_CurrentRAMBank = 0;
 }
 
-void Emulator::updateTimers(int cycles)
+/*void Emulator::updateTimers(int cycles)
 {
 	doDividerRegister(cycles);
 
@@ -355,11 +372,12 @@ void Emulator::updateTimers(int cycles)
 		}
 	}
 }
+*/
 
 bool Emulator::isClockEnabled() const
 {
 	// Bit 2 of the TMC is 0 if timer is disabled, and 1 if timer is enabled
-	return testBit(readMemory(TMC), 2) ? true : false;
+	return ISBITSET(readMemory(TMC), 2) ? true : false;
 }
 
 BYTE Emulator::getClockFreq() const
@@ -399,7 +417,7 @@ void Emulator::requestInterrupt(int id)
 	writeMemory(0xFF0F, interruptFlag);
 }
 
-void Emulator::executeInterrupts()
+/* void Emulator::executeInterrupts()
 {
 	if (m_InterruptMaster == true)
 	{
@@ -419,8 +437,8 @@ void Emulator::executeInterrupts()
 		}
 	}
 }
-
-void Emulator::serviceInterrupt(int interrupt)
+*/ 
+/* void Emulator::serviceInterrupt(int interrupt)
 {
 	m_InterruptMaster = false;
 
@@ -550,6 +568,7 @@ bool Emulator::isLCDEnabled() const
 	return ISBITSET(readMemory(0xFF40), 7);
 }
 
+*/
 
 // OAM DMA. Basically a circuit designed to copy really fast. In this case, copy sprite data really fast.
 // Writing to this register launches a DMA transfer from ROM or RAM to OAM memory (sprite attribute table). 
@@ -565,6 +584,7 @@ void Emulator::DMATransfer(BYTE data)
 	}
 }
 
+/*
 void Emulator::drawScanLine()
 {
 	BYTE control = readMemory(0xFF40);
@@ -582,7 +602,9 @@ void Emulator::drawScanLine()
 	}
 }
 
-void Emulator::renderTiles()
+*/
+
+/* void Emulator::renderTiles()
 {
 	// locate tile in memory region 0x8000 - 0x8FFF
 	const WORD memoryRegion = 0x8000;
@@ -697,6 +719,8 @@ void Emulator::renderTiles()
 		tileLocation += ((tileNum + 128) * 16);
 }
 
+*/
+
 int Emulator::executeNextOpcode() 
 {
 	int res = 0;
@@ -706,11 +730,58 @@ int Emulator::executeNextOpcode()
 	return res;
 }
 
-int Emulator::executeNextOpcode(BYTE opcode) 
+int Emulator::executeOpcode(BYTE opcode)
 {
 	switch (opcode)
 	{
+	//no-op
+	case 0x00: return 4;
+	// jumps
+	case 0xC3: CPU_JUMP(0, false, 0); return 12;
+	case 0xCD: CPU_CALL(0, false, 0); break;
+
 	default:
+		printf("Unknown opcode: ", opcode);
 		break;
 	}
+
+	return 1;
+}
+
+void Emulator::CPU_CALL(bool useCondition, int flag, bool condition)
+{
+	// grab immediate WORD value from memory
+	WORD nn = readWord();
+	m_ProgramCounter += 2;
+
+	if (!useCondition)
+	{
+		pushWordOntoStack(m_ProgramCounter);
+		m_ProgramCounter = nn;
+	}
+}
+
+void Emulator::CPU_JUMP(bool useCondition, int flag, bool condition)
+{
+	WORD nn = readWord();
+	m_ProgramCounter += 2;
+
+	if (!useCondition)
+	{
+		m_ProgramCounter = nn;
+		return;
+	}
+
+}
+
+void Emulator::pushWordOntoStack(WORD word)
+{
+	BYTE hi = word >> 8;
+	BYTE lo = word & 0xFF;
+
+	// We can only write to memory one byte at a time
+	m_StackPointer.reg--;
+	writeMemory(m_StackPointer.reg, hi);
+	m_StackPointer.reg--;
+	writeMemory(m_StackPointer.reg, lo);
 }

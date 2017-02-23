@@ -746,7 +746,6 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0x18: return opcode_18();
 	case 0x21: return opcode_21();
 	case 0x23: return opcode_23();
-	// this one case 0x2A: return opcode_2A();
 	case 0x31: return opcode_31();
 	case 0x33: return opcode_33();
 	case 0x3E: return opcode_3E();

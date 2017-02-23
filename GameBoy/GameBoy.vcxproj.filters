@@ -41,5 +41,11 @@
     <ClCompile Include="Emulator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="opcode_mapping.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="opcodes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

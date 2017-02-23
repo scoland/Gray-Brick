@@ -153,6 +153,8 @@
   <ItemGroup>
     <ClCompile Include="Emulator.cpp" />
     <ClCompile Include="GameBoy.cpp" />
+    <ClCompile Include="opcodes.cpp" />
+    <ClCompile Include="opcode_mapping.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

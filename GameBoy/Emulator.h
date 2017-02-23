@@ -10,7 +10,9 @@ typedef short SIGNED_WORD;
 
 // Each value is the bit in the F register for that specific flag
 // Zero Flag
-#define FLAG_Z 7;
+//#define FLAG_Z 7;
+const int FLAG_Z = 7;
+
 // Subtract Flag
 #define FLAG_N 6;
 // Half carry flag
@@ -90,10 +92,19 @@ private:
 	void CPU_16BIT_LOAD(WORD& reg);
 	void CPU_REG_LOAD(BYTE& reg, BYTE value);
 	void CPU_REG_LOAD_ROM(BYTE& reg, WORD address);
+	void CPU_8BIT_INC(BYTE& reg);
 	void CPU_16BIT_INC(WORD& reg);
 	void CPU_16BIT_DEC(WORD& reg);
+	void CPU_8BIT_XOR(BYTE& reg, BYTE toXOR);
+	void CPU_LD_TO_ADDRESS(BYTE& reg);
+	void CPU_LDH_INTO_DATA();
+	void CPU_JUMP_IMMEDIATE(bool useCondition, int flag, bool condition);
+	void CPU_RETURN();
+	void CPU_STACK_PUSH(WORD val);
+	void CPU_STACK_POP(WORD reg);
 	
 	void pushWordOntoStack(WORD word);
+	WORD popWordOffStack();
 
 	BYTE m_CartridgeMemory[0x200000];
 	BYTE m_Rom[0x10000];
@@ -140,4 +151,25 @@ private:
 
 	// IME interrupt master enable flag
 	bool m_InterruptMaster;
+
+	// No-op
+	void NOP();
+	
+	// Opcodes
+	int opcode_00(); int opcode_01(); int opcode_02(); int opcode_03(); int opcode_04(); int opcode_05(); int opcode_06(); int opcode_07(); int opcode_08(); int opcode_09(); int opcode_0A(); int opcode_0B(); int opcode_0C(); int opcode_0D(); int opcode_0E(); int opcode_0F();
+	int opcode_10(); int opcode_11(); int opcode_12(); int opcode_13(); int opcode_14(); int opcode_15(); int opcode_16(); int opcode_17(); int opcode_18(); int opcode_19(); int opcode_1A(); int opcode_1B(); int opcode_1C(); int opcode_1D(); int opcode_1E(); int opcode_1F();
+	int opcode_20(); int opcode_21(); int opcode_22(); int opcode_23(); int opcode_24(); int opcode_25(); int opcode_26(); int opcode_27(); int opcode_28(); int opcode_29(); int opcode_2A(); int opcode_2B(); int opcode_2C(); int opcode_2D(); int opcode_2E(); int opcode_2F();
+	int opcode_30(); int opcode_31(); int opcode_32(); int opcode_33(); int opcode_34(); int opcode_35(); int opcode_36(); int opcode_37(); int opcode_38(); int opcode_39(); int opcode_3A(); int opcode_3B(); int opcode_3C(); int opcode_3D(); int opcode_3E(); int opcode_3F();
+	int opcode_40(); int opcode_41(); int opcode_42(); int opcode_43(); int opcode_44(); int opcode_45(); int opcode_46(); int opcode_47(); int opcode_48(); int opcode_49(); int opcode_4A(); int opcode_4B(); int opcode_4C(); int opcode_4D(); int opcode_4E(); int opcode_4F();
+	int opcode_50(); int opcode_51(); int opcode_52(); int opcode_53(); int opcode_54(); int opcode_55(); int opcode_56(); int opcode_57(); int opcode_58(); int opcode_59(); int opcode_5A(); int opcode_5B(); int opcode_5C(); int opcode_5D(); int opcode_5E(); int opcode_5F();
+	int opcode_60(); int opcode_61(); int opcode_62(); int opcode_63(); int opcode_64(); int opcode_65(); int opcode_66(); int opcode_67(); int opcode_68(); int opcode_69(); int opcode_6A(); int opcode_6B(); int opcode_6C(); int opcode_6D(); int opcode_6E(); int opcode_6F();
+	int opcode_70(); int opcode_71(); int opcode_72(); int opcode_73(); int opcode_74(); int opcode_75(); int opcode_76(); int opcode_77(); int opcode_78(); int opcode_79(); int opcode_7A(); int opcode_7B(); int opcode_7C(); int opcode_7D(); int opcode_7E(); int opcode_7F();
+	int opcode_80(); int opcode_81(); int opcode_82(); int opcode_83(); int opcode_84(); int opcode_85(); int opcode_86(); int opcode_87(); int opcode_88(); int opcode_89(); int opcode_8A(); int opcode_8B(); int opcode_8C(); int opcode_8D(); int opcode_8E(); int opcode_8F();
+	int opcode_90(); int opcode_91(); int opcode_92(); int opcode_93(); int opcode_94(); int opcode_95(); int opcode_96(); int opcode_97(); int opcode_98(); int opcode_99(); int opcode_9A(); int opcode_9B(); int opcode_9C(); int opcode_9D(); int opcode_9E(); int opcode_9F();
+	int opcode_A0(); int opcode_A1(); int opcode_A2(); int opcode_A3(); int opcode_A4(); int opcode_A5(); int opcode_A6(); int opcode_A7(); int opcode_A8(); int opcode_A9(); int opcode_AA(); int opcode_AB(); int opcode_AC(); int opcode_AD(); int opcode_AE(); int opcode_AF();
+	int opcode_B0(); int opcode_B1(); int opcode_B2(); int opcode_B3(); int opcode_B4(); int opcode_B5(); int opcode_B6(); int opcode_B7(); int opcode_B8(); int opcode_B9(); int opcode_BA(); int opcode_BB(); int opcode_BC(); int opcode_BD(); int opcode_BE(); int opcode_BF();
+	int opcode_C0(); int opcode_C1(); int opcode_C2(); int opcode_C3(); int opcode_C4(); int opcode_C5(); int opcode_C6(); int opcode_C7(); int opcode_C8(); int opcode_C9(); int opcode_CA(); int opcode_CB(); int opcode_CC(); int opcode_CD(); int opcode_CE(); int opcode_CF();
+	int opcode_D0(); int opcode_D1(); int opcode_D2(); int opcode_D3(); int opcode_D4(); int opcode_D5(); int opcode_D6(); int opcode_D7(); int opcode_D8(); int opcode_D9(); int opcode_DA(); int opcode_DB(); int opcode_DC(); int opcode_DD(); int opcode_DE(); int opcode_DF();
+	int opcode_E0(); int opcode_E1(); int opcode_E2(); int opcode_E3(); int opcode_E4(); int opcode_E5(); int opcode_E6(); int opcode_E7(); int opcode_E8(); int opcode_E9(); int opcode_EA(); int opcode_EB(); int opcode_EC(); int opcode_ED(); int opcode_EE(); int opcode_EF();
+	int opcode_F0(); int opcode_F1(); int opcode_F2(); int opcode_F3(); int opcode_F4(); int opcode_F5(); int opcode_F6(); int opcode_F7(); int opcode_F8(); int opcode_F9(); int opcode_FA(); int opcode_FB(); int opcode_FC(); int opcode_FD(); int opcode_FE(); int opcode_FF();
 };

@@ -749,9 +749,11 @@ int Emulator::executeOpcode(BYTE opcode)
 	{
 	case 0x00: return opcode_00();
 	case 0x01: return opcode_01();
+	case 0x02: return opcode_02();
 	case 0x03: return opcode_03();
 	case 0x04: return opcode_04();
 	case 0x05: return opcode_05();
+	case 0x06: return opcode_06();
 	case 0x0D: return opcode_0D();
 	case 0x0E: return opcode_0E();
 	case 0x11: return opcode_11();
@@ -759,26 +761,37 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0x13: return opcode_13();
 	case 0x14: return opcode_14();
 	case 0x15: return opcode_15();
+	case 0x16: return opcode_16();
 	case 0x18: return opcode_18();
 	case 0x1C: return opcode_1C();
 	case 0x1D: return opcode_1D();
+	case 0x1E: return opcode_1E();
 	case 0x1F: return opcode_1F();
 	case 0x20: return opcode_20();
 	case 0x21: return opcode_21();
 	case 0x23: return opcode_23();
 	case 0x25: return opcode_25();
+	case 0x26: return opcode_26();
 	case 0x28: return opcode_28();
 	case 0x2A: return opcode_2A();
 	case 0x2D: return opcode_2D();
+	case 0x2E: return opcode_2E();
 	case 0x30: return opcode_30();
 	case 0x31: return opcode_31();
 	case 0x33: return opcode_33();
 	case 0x3D: return opcode_3D();
 	case 0x3E: return opcode_3E();
+	case 0x4F: return opcode_4F();
 	case 0x47: return opcode_47();
+	case 0x57: return opcode_57();
+	case 0x5F: return opcode_5F();
+	case 0x67: return opcode_67();
+	case 0x6F: return opcode_6F();
+	case 0x77: return opcode_77();
 	case 0x78: return opcode_78();
 	case 0x7C: return opcode_7C();
 	case 0x7D: return opcode_7D();
+	case 0x7F: return opcode_7F();
 	case 0x90: return opcode_90();
 	case 0xA0: return opcode_A0();
 	case 0xA1: return opcode_A0();
@@ -798,19 +811,25 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0xC0: return opcode_C0();
 	case 0xC1: return opcode_C1();
 	case 0xC3: return opcode_C3();
+	case 0xC4: return opcode_C4();
 	case 0xC5: return opcode_C5();
 	case 0xC8: return opcode_C8();
 	case 0xC9: return opcode_C9();
+	case 0xCC: return opcode_CC();
 	case 0xCE: return opcode_CE();
 	case 0xCD: return opcode_CD();
 	case 0xD0: return opcode_D0();
 	case 0xD1: return opcode_D1();
+	case 0xD4: return opcode_D4();
 	case 0xD5: return opcode_D5();
 	case 0xD6: return opcode_D6();
 	case 0xD8: return opcode_D8();
+	case 0xDC: return opcode_DC();
 	case 0xE0: return opcode_E0();
 	case 0xE1: return opcode_E1();
+	case 0xE5: return opcode_E5();
 	case 0xE6: return opcode_E6();
+	case 0xEA: return opcode_EA();
 	case 0xF0:
 	{
 		WORD n = readWord();
@@ -822,6 +841,7 @@ int Emulator::executeOpcode(BYTE opcode)
 	}
 	case 0xF1: return opcode_F1();
 	case 0xF3: return opcode_F3();
+	case 0xF5: return opcode_F5();
 	case 0xFA:
 	{
 		WORD nn = readWord();
@@ -830,10 +850,8 @@ int Emulator::executeOpcode(BYTE opcode)
 		m_RegisterAF.hi = readMemory(nn);
 		return 16;
 	}
-	case 0xE5: return opcode_E5();
-	case 0xEA: return opcode_EA();
 	case 0xFB: return opcode_FB();
-	case 0xF5: return opcode_F5();
+	
 
 	/*
 	// no-op

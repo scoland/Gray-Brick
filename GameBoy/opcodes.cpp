@@ -34,6 +34,12 @@ void Emulator::CPU_CALL(bool useCondition, int flag, bool condition)
 	{
 		pushWordOntoStack(m_ProgramCounter);
 		m_ProgramCounter = nn;
+		return;
+	}
+	else if (ISBITSET(m_RegisterAF.lo, flag) == condition)
+	{
+		pushWordOntoStack(m_ProgramCounter);
+		m_ProgramCounter = nn;
 	}
 }
 

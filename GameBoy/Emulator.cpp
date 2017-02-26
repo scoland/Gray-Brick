@@ -25,7 +25,7 @@ void Emulator::loadRom()
 	FILE * in;
 
 	// open file, flag 'rb' means 'read binary'
-	in = fopen("01-special.gb", "rb");
+	in = fopen("04.gb", "rb");
 
 	// Put rom into memory
 	fread(m_CartridgeMemory, 1, 0x200000, in);
@@ -754,8 +754,11 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0x04: return opcode_04();
 	case 0x05: return opcode_05();
 	case 0x06: return opcode_06();
+	case 0x0A: return opcode_0A();
+	case 0x0C: return opcode_0C();
 	case 0x0D: return opcode_0D();
 	case 0x0E: return opcode_0E();
+	case 0x09: return opcode_09();
 	case 0x11: return opcode_11();
 	case 0x12: return opcode_12();
 	case 0x13: return opcode_13();
@@ -763,35 +766,76 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0x15: return opcode_15();
 	case 0x16: return opcode_16();
 	case 0x18: return opcode_18();
+	case 0x19: return opcode_19();
+	case 0x1A: return opcode_1A();
 	case 0x1C: return opcode_1C();
 	case 0x1D: return opcode_1D();
 	case 0x1E: return opcode_1E();
 	case 0x1F: return opcode_1F();
 	case 0x20: return opcode_20();
 	case 0x21: return opcode_21();
+	case 0x22:
+	{
+		writeMemory(m_RegisterHL.reg, m_RegisterAF.hi);
+		CPU_16BIT_INC(m_RegisterHL.reg);
+		return 8;
+	}
 	case 0x23: return opcode_23();
+	case 0x24: return opcode_24();
 	case 0x25: return opcode_25();
 	case 0x26: return opcode_26();
 	case 0x28: return opcode_28();
+	case 0x29: return opcode_29();
 	case 0x2A: return opcode_2A();
+	case 0x2C: return opcode_2C();
 	case 0x2D: return opcode_2D();
 	case 0x2E: return opcode_2E();
 	case 0x30: return opcode_30();
 	case 0x31: return opcode_31();
+	case 0x32:
+	{
+		writeMemory(m_RegisterHL.reg, m_RegisterAF.hi);
+		CPU_16BIT_DEC(m_RegisterHL.reg);
+		return 8;
+	}
 	case 0x33: return opcode_33();
+	case 0x35: return opcode_35();
+	case 0x39: return opcode_39();
+	case 0x3C: return opcode_3C();
 	case 0x3D: return opcode_3D();
 	case 0x3E: return opcode_3E();
+	case 0x46: return opcode_46();
+	case 0x4E: return opcode_4E();
 	case 0x4F: return opcode_4F();
 	case 0x47: return opcode_47();
+	case 0x56: return opcode_56();
 	case 0x57: return opcode_57();
 	case 0x5F: return opcode_5F();
 	case 0x67: return opcode_67();
+	case 0x6E: return opcode_6E();
 	case 0x6F: return opcode_6F();
+	case 0x70: return opcode_70();
+	case 0x71: return opcode_71();
+	case 0x72: return opcode_72();
+	case 0x73: return opcode_73();
+	case 0x74: return opcode_74();
+	case 0x75: return opcode_75();
 	case 0x77: return opcode_77();
 	case 0x78: return opcode_78();
+	case 0x79: return opcode_79();
+	case 0x7A: return opcode_7A();
+	case 0x7B: return opcode_7B();
 	case 0x7C: return opcode_7C();
 	case 0x7D: return opcode_7D();
+	case 0x7E: return opcode_7E();
 	case 0x7F: return opcode_7F();
+	case 0x80: return opcode_80();
+	case 0x81: return opcode_81();
+	case 0x82: return opcode_82();
+	case 0x83: return opcode_83();
+	case 0x84: return opcode_84();
+	case 0x85: return opcode_85();
+	case 0x86: return opcode_86();
 	case 0x90: return opcode_90();
 	case 0xA0: return opcode_A0();
 	case 0xA1: return opcode_A0();
@@ -800,6 +844,13 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0xA4: return opcode_A0();
 	case 0xA5: return opcode_A0();
 	case 0xA7: return opcode_A7();
+	case 0xA8: return opcode_A8();
+	case 0xA9: return opcode_A8();
+	case 0xAA: return opcode_AA();
+	case 0xAB: return opcode_AB();
+	case 0xAC: return opcode_A9();
+	case 0xAD: return opcode_AD();
+	case 0xAE: return opcode_AE();
 	case 0xAF: return opcode_AF();
 	case 0xB0: return opcode_B0();
 	case 0xB1: return opcode_B1();
@@ -807,14 +858,24 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0xB3: return opcode_B3();
 	case 0xB4: return opcode_B4();
 	case 0xB5: return opcode_B5();
+	case 0xB6: return opcode_B6();
 	case 0xB7: return opcode_B7();
+	case 0xB8: return opcode_B8();
+	case 0xB9: return opcode_B9();
+	case 0xBA: return opcode_BA();
+	case 0xBB: return opcode_BB();
+	case 0xBC: return opcode_BC();
+	case 0xBD: return opcode_BD();
+	case 0xBF: return opcode_BF();
 	case 0xC0: return opcode_C0();
 	case 0xC1: return opcode_C1();
 	case 0xC3: return opcode_C3();
 	case 0xC4: return opcode_C4();
 	case 0xC5: return opcode_C5();
+	case 0xC6: return opcode_C6();
 	case 0xC8: return opcode_C8();
 	case 0xC9: return opcode_C9();
+	case 0xCB: return executeExtendedOpcode();
 	case 0xCC: return opcode_CC();
 	case 0xCE: return opcode_CE();
 	case 0xCD: return opcode_CD();
@@ -830,6 +891,7 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0xE5: return opcode_E5();
 	case 0xE6: return opcode_E6();
 	case 0xEA: return opcode_EA();
+	case 0xEE: return opcode_EE();
 	case 0xF0:
 	{
 		WORD n = readWord();
@@ -842,6 +904,7 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0xF1: return opcode_F1();
 	case 0xF3: return opcode_F3();
 	case 0xF5: return opcode_F5();
+	case 0xF6: return opcode_F6();
 	case 0xFA:
 	{
 		WORD nn = readWord();
@@ -851,7 +914,7 @@ int Emulator::executeOpcode(BYTE opcode)
 		return 16;
 	}
 	case 0xFB: return opcode_FB();
-	
+	case 0xFE: return opcode_FE();
 
 	/*
 	// no-op
@@ -916,4 +979,28 @@ WORD Emulator::popWordOffStack()
 	word += lo;
 
 	return word;
+}
+
+int Emulator::executeExtendedOpcode()
+{
+	BYTE opcode = readMemory(m_ProgramCounter);
+	m_ProgramCounter++;
+
+	std::cout << opcode_cb_names[opcode] << " : 0x" << std::hex << static_cast<int>(opcode) << std::endl;
+	switch (opcode)
+	{
+	case 0x18: return opcode_CB_18();
+	case 0x19: return opcode_CB_19();
+	case 0x1A: return opcode_CB_1A();
+	case 0x1B: return opcode_CB_1B();
+	case 0x1C: return opcode_CB_1C();
+	case 0x1D: return opcode_CB_1D();
+	case 0x1E: return opcode_CB_1E();
+	case 0x1F: return opcode_CB_1F();
+	case 0x38: return opcode_CB_38();
+	default:
+		std::cout << "Extended opcode not found : " << std::hex << opcode << std::endl;
+		return 0;
+	}
+
 }

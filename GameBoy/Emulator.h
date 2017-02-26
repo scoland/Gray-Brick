@@ -93,9 +93,10 @@ private:
 	void CPU_REG_LOAD_ROM(BYTE& reg, WORD address);
 	void CPU_8BIT_INC(BYTE& reg);
 	void CPU_8BIT_DEC(BYTE& reg);
+	void CPU_8BIT_MEMORY_DEC(WORD address);
 	void CPU_16BIT_INC(WORD& reg);
 	void CPU_16BIT_DEC(WORD& reg);
-	void CPU_8BIT_XOR(BYTE& reg, BYTE toXOR);
+	void CPU_8BIT_XOR(BYTE& reg, BYTE toXOR, bool useImmediate);
 	void CPU_LD_TO_ADDRESS(BYTE& reg);
 	void CPU_LDH_INTO_DATA();
 	void CPU_JUMP_IMMEDIATE(bool useCondition, int flag, bool condition);
@@ -105,9 +106,16 @@ private:
 	void CPU_LD_I(BYTE& reg, WORD& address);
 	void CPU_8BIT_SUB(BYTE& reg, BYTE subtracting, bool useImmediate, bool subCarry);
 	void CPU_RRC(BYTE& reg);
+	void CPU_RRC_MEMORY(WORD address);
 	void CPU_ADC(BYTE toAdd);
-	void CPU_OR(BYTE val);
+	void CPU_8BIT_ADD(BYTE& reg, BYTE toAdd, bool useImmediate, bool addCarry);
+	void CPU_CP(BYTE reg, BYTE toCompare, bool useImmediate);
+	void CPU_ADD_HL(WORD reg);
+
+	void CPU_8BIT_OR(BYTE& reg, BYTE toOr, bool useImmediate);
 	void CPU_AND(BYTE val, bool useImmediate);
+
+	void CPU_SRL(BYTE& reg);
 	
 	BYTE get_byte_from_pc();
 	WORD get_word_from_pc();
@@ -117,6 +125,8 @@ private:
 
 	BYTE m_CartridgeMemory[0x200000];
 	BYTE m_Rom[0x10000];
+
+	int executeExtendedOpcode();
 
 	// Use a union with an anonymous struct to give us access to individual registers from a pair
 	union Register
@@ -181,4 +191,22 @@ private:
 	int opcode_D0(); int opcode_D1(); int opcode_D2(); int opcode_D3(); int opcode_D4(); int opcode_D5(); int opcode_D6(); int opcode_D7(); int opcode_D8(); int opcode_D9(); int opcode_DA(); int opcode_DB(); int opcode_DC(); int opcode_DD(); int opcode_DE(); int opcode_DF();
 	int opcode_E0(); int opcode_E1(); int opcode_E2(); int opcode_E3(); int opcode_E4(); int opcode_E5(); int opcode_E6(); int opcode_E7(); int opcode_E8(); int opcode_E9(); int opcode_EA(); int opcode_EB(); int opcode_EC(); int opcode_ED(); int opcode_EE(); int opcode_EF();
 	int opcode_F0(); int opcode_F1(); int opcode_F2(); int opcode_F3(); int opcode_F4(); int opcode_F5(); int opcode_F6(); int opcode_F7(); int opcode_F8(); int opcode_F9(); int opcode_FA(); int opcode_FB(); int opcode_FC(); int opcode_FD(); int opcode_FE(); int opcode_FF();
+
+	// Extended opcodes
+	int opcode_CB_00(); int opcode_CB_01(); int opcode_CB_02(); int opcode_CB_03(); int opcode_CB_04(); int opcode_CB_05(); int opcode_CB_06(); int opcode_CB_07(); int opcode_CB_08(); int opcode_CB_09(); int opcode_CB_0A(); int opcode_CB_0B(); int opcode_CB_0C(); int opcode_CB_0D(); int opcode_CB_0E(); int opcode_CB_0F();
+	int opcode_CB_10(); int opcode_CB_11(); int opcode_CB_12(); int opcode_CB_13(); int opcode_CB_14(); int opcode_CB_15(); int opcode_CB_16(); int opcode_CB_17(); int opcode_CB_18(); int opcode_CB_19(); int opcode_CB_1A(); int opcode_CB_1B(); int opcode_CB_1C(); int opcode_CB_1D(); int opcode_CB_1E(); int opcode_CB_1F();
+	int opcode_CB_20(); int opcode_CB_21(); int opcode_CB_22(); int opcode_CB_23(); int opcode_CB_24(); int opcode_CB_25(); int opcode_CB_26(); int opcode_CB_27(); int opcode_CB_28(); int opcode_CB_29(); int opcode_CB_2A(); int opcode_CB_2B(); int opcode_CB_2C(); int opcode_CB_2D(); int opcode_CB_2E(); int opcode_CB_2F();
+	int opcode_CB_30(); int opcode_CB_31(); int opcode_CB_32(); int opcode_CB_33(); int opcode_CB_34(); int opcode_CB_35(); int opcode_CB_36(); int opcode_CB_37(); int opcode_CB_38(); int opcode_CB_39(); int opcode_CB_3A(); int opcode_CB_3B(); int opcode_CB_3C(); int opcode_CB_3D(); int opcode_CB_3E(); int opcode_CB_3F();
+	int opcode_CB_40(); int opcode_CB_41(); int opcode_CB_42(); int opcode_CB_43(); int opcode_CB_44(); int opcode_CB_45(); int opcode_CB_46(); int opcode_CB_47(); int opcode_CB_48(); int opcode_CB_49(); int opcode_CB_4A(); int opcode_CB_4B(); int opcode_CB_4C(); int opcode_CB_4D(); int opcode_CB_4E(); int opcode_CB_4F();
+	int opcode_CB_50(); int opcode_CB_51(); int opcode_CB_52(); int opcode_CB_53(); int opcode_CB_54(); int opcode_CB_55(); int opcode_CB_56(); int opcode_CB_57(); int opcode_CB_58(); int opcode_CB_59(); int opcode_CB_5A(); int opcode_CB_5B(); int opcode_CB_5C(); int opcode_CB_5D(); int opcode_CB_5E(); int opcode_CB_5F();
+	int opcode_CB_60(); int opcode_CB_61(); int opcode_CB_62(); int opcode_CB_63(); int opcode_CB_64(); int opcode_CB_65(); int opcode_CB_66(); int opcode_CB_67(); int opcode_CB_68(); int opcode_CB_69(); int opcode_CB_6A(); int opcode_CB_6B(); int opcode_CB_6C(); int opcode_CB_6D(); int opcode_CB_6E(); int opcode_CB_6F();
+	int opcode_CB_70(); int opcode_CB_71(); int opcode_CB_72(); int opcode_CB_73(); int opcode_CB_74(); int opcode_CB_75(); int opcode_CB_76(); int opcode_CB_77(); int opcode_CB_78(); int opcode_CB_79(); int opcode_CB_7A(); int opcode_CB_7B(); int opcode_CB_7C(); int opcode_CB_7D(); int opcode_CB_7E(); int opcode_CB_7F();
+	int opcode_CB_80(); int opcode_CB_81(); int opcode_CB_82(); int opcode_CB_83(); int opcode_CB_84(); int opcode_CB_85(); int opcode_CB_86(); int opcode_CB_87(); int opcode_CB_88(); int opcode_CB_89(); int opcode_CB_8A(); int opcode_CB_8B(); int opcode_CB_8C(); int opcode_CB_8D(); int opcode_CB_8E(); int opcode_CB_8F();
+	int opcode_CB_90(); int opcode_CB_91(); int opcode_CB_92(); int opcode_CB_93(); int opcode_CB_94(); int opcode_CB_95(); int opcode_CB_96(); int opcode_CB_97(); int opcode_CB_98(); int opcode_CB_99(); int opcode_CB_9A(); int opcode_CB_9B(); int opcode_CB_9C(); int opcode_CB_9D(); int opcode_CB_9E(); int opcode_CB_9F();
+	int opcode_CB_A0(); int opcode_CB_A1(); int opcode_CB_A2(); int opcode_CB_A3(); int opcode_CB_A4(); int opcode_CB_A5(); int opcode_CB_A6(); int opcode_CB_A7(); int opcode_CB_A8(); int opcode_CB_A9(); int opcode_CB_AA(); int opcode_CB_AB(); int opcode_CB_AC(); int opcode_CB_AD(); int opcode_CB_AE(); int opcode_CB_AF();
+	int opcode_CB_B0(); int opcode_CB_B1(); int opcode_CB_B2(); int opcode_CB_B3(); int opcode_CB_B4(); int opcode_CB_B5(); int opcode_CB_B6(); int opcode_CB_B7(); int opcode_CB_B8(); int opcode_CB_B9(); int opcode_CB_BA(); int opcode_CB_BB(); int opcode_CB_BC(); int opcode_CB_BD(); int opcode_CB_BE(); int opcode_CB_BF();
+	int opcode_CB_C0(); int opcode_CB_C1(); int opcode_CB_C2(); int opcode_CB_C3(); int opcode_CB_C4(); int opcode_CB_C5(); int opcode_CB_C6(); int opcode_CB_C7(); int opcode_CB_C8(); int opcode_CB_C9(); int opcode_CB_CA(); int opcode_CB_CB(); int opcode_CB_CC(); int opcode_CB_CD(); int opcode_CB_CE(); int opcode_CB_CF();
+	int opcode_CB_D0(); int opcode_CB_D1(); int opcode_CB_D2(); int opcode_CB_D3(); int opcode_CB_D4(); int opcode_CB_D5(); int opcode_CB_D6(); int opcode_CB_D7(); int opcode_CB_D8(); int opcode_CB_D9(); int opcode_CB_DA(); int opcode_CB_DB(); int opcode_CB_DC(); int opcode_CB_DD(); int opcode_CB_DE(); int opcode_CB_DF();
+	int opcode_CB_E0(); int opcode_CB_E1(); int opcode_CB_E2(); int opcode_CB_E3(); int opcode_CB_E4(); int opcode_CB_E5(); int opcode_CB_E6(); int opcode_CB_E7(); int opcode_CB_E8(); int opcode_CB_E9(); int opcode_CB_EA(); int opcode_CB_EB(); int opcode_CB_EC(); int opcode_CB_ED(); int opcode_CB_EE(); int opcode_CB_EF();
+	int opcode_CB_F0(); int opcode_CB_F1(); int opcode_CB_F2(); int opcode_CB_F3(); int opcode_CB_F4(); int opcode_CB_F5(); int opcode_CB_F6(); int opcode_CB_F7(); int opcode_CB_F8(); int opcode_CB_F9(); int opcode_CB_FA(); int opcode_CB_FB(); int opcode_CB_FC(); int opcode_CB_FD(); int opcode_CB_FE(); int opcode_CB_FF();
 };

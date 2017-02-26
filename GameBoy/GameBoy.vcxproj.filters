@@ -30,6 +30,9 @@
     <ClInclude Include="GameBoy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="opcode_names.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

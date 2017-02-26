@@ -10,15 +10,14 @@ typedef short SIGNED_WORD;
 
 // Each value is the bit in the F register for that specific flag
 // Zero Flag
-//#define FLAG_Z 7;
 const int FLAG_Z = 7;
 
 // Subtract Flag
-#define FLAG_N 6;
+const int FLAG_N = 6;
 // Half carry flag
-#define FLAG_H 5;
+const int FLAG_H = 5;
 // Carry flag
-#define FLAG_C 4;
+const int FLAG_C = 4;
 
 // Timer counter. When this overflows (bigger than 0xFF) it will be reset to TMA
 // and an interrupt will be requested
@@ -29,7 +28,7 @@ const BYTE TMA = 0xFF06;
 const BYTE TMC = 0xFF07;
 
 // Number of Hz the DMG clock runs at
-#define CLOCKSPEED 4194304;
+const int CLOCKSPEED = 4194304;
 
 // Some helper functions
 // Set a specific bit in a value
@@ -93,16 +92,26 @@ private:
 	void CPU_REG_LOAD(BYTE& reg, BYTE value);
 	void CPU_REG_LOAD_ROM(BYTE& reg, WORD address);
 	void CPU_8BIT_INC(BYTE& reg);
+	void CPU_8BIT_DEC(BYTE& reg);
 	void CPU_16BIT_INC(WORD& reg);
 	void CPU_16BIT_DEC(WORD& reg);
 	void CPU_8BIT_XOR(BYTE& reg, BYTE toXOR);
 	void CPU_LD_TO_ADDRESS(BYTE& reg);
 	void CPU_LDH_INTO_DATA();
 	void CPU_JUMP_IMMEDIATE(bool useCondition, int flag, bool condition);
-	void CPU_RETURN();
+	void CPU_RETURN(bool useCondition, int flag, bool condition);
 	void CPU_STACK_PUSH(WORD val);
-	void CPU_STACK_POP(WORD reg);
+	void CPU_STACK_POP(WORD& reg);
+	void CPU_LD_I(BYTE& reg, WORD& address);
+	void CPU_8BIT_SUB(BYTE& reg, BYTE subtracting, bool useImmediate, bool subCarry);
+	void CPU_RRC(BYTE& reg);
+	void CPU_ADC(BYTE toAdd);
+	void CPU_OR(BYTE val);
+	void CPU_AND(BYTE val, bool useImmediate);
 	
+	BYTE get_byte_from_pc();
+	WORD get_word_from_pc();
+
 	void pushWordOntoStack(WORD word);
 	WORD popWordOffStack();
 

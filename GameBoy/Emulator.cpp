@@ -25,7 +25,7 @@ void Emulator::loadRom()
 	FILE * in;
 
 	// open file, flag 'rb' means 'read binary'
-	in = fopen("cpu_instrs.gb", "rb");
+	in = fopen("01-special.gb", "rb");
 
 	// Put rom into memory
 	fread(m_CartridgeMemory, 1, 0x200000, in);
@@ -47,11 +47,12 @@ void Emulator::update()
 
 		// Timer and graphics are passed the number of cycles the opcode took to execute
 		// This is so they can update at the same rate as the CPU
-		// UpdateTimers(cycles);
+		updateTimers(cycles);
 		// UpdateGraphics(cycles);
 
-		// DoInterrupts();
+		executeInterrupts();
 	}
+	int test;
 
 	// RenderScreen();
 
@@ -59,11 +60,17 @@ void Emulator::update()
 
 void Emulator::resetCPU()
 {
+	m_InterruptMaster = false;
+
 	m_ProgramCounter = 0x100;
-	m_RegisterAF.reg = 0x01B0;
-	m_RegisterBC.reg = 0x0013;
-	m_RegisterDE.reg = 0x00D8;
-	m_RegisterHL.reg = 0x014D;
+	//m_RegisterAF.reg = 0x01B0;
+	m_RegisterAF.reg = 0x1180;
+	//m_RegisterBC.reg = 0x0013;
+	m_RegisterBC.reg = 0x0000;
+	//m_RegisterDE.reg = 0x00D8;
+	m_RegisterDE.reg = 0xFF56;
+	//m_RegisterHL.reg = 0x014D;
+	m_RegisterHL.reg = 0x000D;
 	m_StackPointer.reg = 0xFFFE;
 
 	m_Rom[0xFF05] = 0x00;
@@ -234,6 +241,7 @@ WORD Emulator::readWord() const
 	res = res << 8;
 	res |= readMemory(m_ProgramCounter);
 	return res;
+
 }
 
 void Emulator::handleBanking(WORD address, BYTE data)
@@ -348,9 +356,9 @@ void Emulator::changeROMRAMMode(BYTE data)
 		m_CurrentRAMBank = 0;
 }
 
-/*void Emulator::updateTimers(int cycles)
+void Emulator::updateTimers(int cycles)
 {
-	doDividerRegister(cycles);
+	dividerRegister(cycles);
 
 	// the clock must be enabled to update the clock
 	if (isClockEnabled())
@@ -376,7 +384,7 @@ void Emulator::changeROMRAMMode(BYTE data)
 		}
 	}
 }
-*/
+
 
 bool Emulator::isClockEnabled() const
 {
@@ -421,7 +429,7 @@ void Emulator::requestInterrupt(int id)
 	writeMemory(0xFF0F, interruptFlag);
 }
 
-/* void Emulator::executeInterrupts()
+void Emulator::executeInterrupts()
 {
 	if (m_InterruptMaster == true)
 	{
@@ -441,8 +449,8 @@ void Emulator::requestInterrupt(int id)
 		}
 	}
 }
-*/ 
-/* void Emulator::serviceInterrupt(int interrupt)
+
+void Emulator::serviceInterrupt(int interrupt)
 {
 	m_InterruptMaster = false;
 
@@ -462,7 +470,7 @@ void Emulator::requestInterrupt(int id)
 		case 4: m_ProgramCounter = 0x60; break;
 	}
 }
-
+/*
 void Emulator::updateGraphics(int cycles)
 {
 	setLCDStatus();
@@ -740,29 +748,91 @@ int Emulator::executeOpcode(BYTE opcode)
 	switch (opcode)
 	{
 	case 0x00: return opcode_00();
+	case 0x01: return opcode_01();
 	case 0x03: return opcode_03();
 	case 0x04: return opcode_04();
+	case 0x05: return opcode_05();
+	case 0x0D: return opcode_0D();
+	case 0x0E: return opcode_0E();
+	case 0x11: return opcode_11();
+	case 0x12: return opcode_12();
 	case 0x13: return opcode_13();
+	case 0x14: return opcode_14();
+	case 0x15: return opcode_15();
 	case 0x18: return opcode_18();
+	case 0x1C: return opcode_1C();
+	case 0x1D: return opcode_1D();
+	case 0x1F: return opcode_1F();
+	case 0x20: return opcode_20();
 	case 0x21: return opcode_21();
 	case 0x23: return opcode_23();
-	// this one case 0x2A: return opcode_2A();
+	case 0x25: return opcode_25();
+	case 0x28: return opcode_28();
+	case 0x2A: return opcode_2A();
+	case 0x2D: return opcode_2D();
+	case 0x30: return opcode_30();
 	case 0x31: return opcode_31();
 	case 0x33: return opcode_33();
+	case 0x3D: return opcode_3D();
 	case 0x3E: return opcode_3E();
+	case 0x47: return opcode_47();
+	case 0x78: return opcode_78();
 	case 0x7C: return opcode_7C();
 	case 0x7D: return opcode_7D();
+	case 0x90: return opcode_90();
+	case 0xA0: return opcode_A0();
+	case 0xA1: return opcode_A0();
+	case 0xA2: return opcode_A0();
+	case 0xA3: return opcode_A0();
+	case 0xA4: return opcode_A0();
+	case 0xA5: return opcode_A0();
+	case 0xA7: return opcode_A7();
 	case 0xAF: return opcode_AF();
+	case 0xB0: return opcode_B0();
+	case 0xB1: return opcode_B1();
+	case 0xB2: return opcode_B2();
+	case 0xB3: return opcode_B3();
+	case 0xB4: return opcode_B4();
+	case 0xB5: return opcode_B5();
+	case 0xB7: return opcode_B7();
+	case 0xC0: return opcode_C0();
 	case 0xC1: return opcode_C1();
 	case 0xC3: return opcode_C3();
+	case 0xC5: return opcode_C5();
+	case 0xC8: return opcode_C8();
 	case 0xC9: return opcode_C9();
+	case 0xCE: return opcode_CE();
 	case 0xCD: return opcode_CD();
+	case 0xD0: return opcode_D0();
 	case 0xD1: return opcode_D1();
+	case 0xD5: return opcode_D5();
+	case 0xD6: return opcode_D6();
+	case 0xD8: return opcode_D8();
 	case 0xE0: return opcode_E0();
 	case 0xE1: return opcode_E1();
+	case 0xE6: return opcode_E6();
+	case 0xF0:
+	{
+		WORD n = readWord();
+		m_ProgramCounter += 2;
+
+		BYTE address = 0xFF00 + n;
+		m_RegisterAF.hi = address;
+		return 12;
+	}
 	case 0xF1: return opcode_F1();
+	case 0xF3: return opcode_F3();
+	case 0xFA:
+	{
+		WORD nn = readWord();
+		m_ProgramCounter += 2;
+
+		m_RegisterAF.hi = readMemory(nn);
+		return 16;
+	}
 	case 0xE5: return opcode_E5();
 	case 0xEA: return opcode_EA();
+	case 0xFB: return opcode_FB();
 	case 0xF5: return opcode_F5();
 
 	/*

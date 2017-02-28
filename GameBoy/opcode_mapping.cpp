@@ -43,25 +43,74 @@ int Emulator::opcode_31() { CPU_16BIT_LOAD(m_StackPointer.reg); return 12; }
 int Emulator::opcode_33() { CPU_16BIT_INC(m_StackPointer.reg); return 8; }
 int Emulator::opcode_35() { CPU_8BIT_MEMORY_DEC(m_RegisterHL.reg); return 12; }
 int Emulator::opcode_39() { CPU_ADD_HL(m_StackPointer.reg); return 8; }
+
 int Emulator::opcode_3C() { CPU_8BIT_INC(m_RegisterAF.hi); return 4; }
 int Emulator::opcode_3D() { CPU_8BIT_DEC(m_RegisterAF.hi); return 4; }
 int Emulator::opcode_3E() { CPU_8BIT_LOAD(m_RegisterAF.hi); return 8; }
-int Emulator::opcode_4E() { CPU_REG_LOAD_ROM(m_RegisterBC.lo, m_RegisterHL.reg); return 8; }
-int Emulator::opcode_4F() { CPU_REG_LOAD(m_RegisterBC.lo, m_RegisterAF.hi); return 4; }
+int Emulator::opcode_40() { CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterBC.hi); return 4; }
+int Emulator::opcode_41() { CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterBC.lo); return 4; }
+int Emulator::opcode_42() { CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterDE.hi); return 4; }
+int Emulator::opcode_43() { CPU_REG_LOAD(m_RegisterDE.hi, m_RegisterBC.hi); return 4; }
+int Emulator::opcode_44() { CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterHL.hi); return 4; }
+int Emulator::opcode_45() { CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterHL.lo); return 4; }
 int Emulator::opcode_46() { CPU_REG_LOAD_ROM(m_RegisterBC.hi, m_RegisterHL.reg); return 8; }
 int Emulator::opcode_47() { CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterAF.hi); return 4; }
+int Emulator::opcode_48() { CPU_REG_LOAD(m_RegisterBC.lo, m_RegisterBC.hi); return 4; }
+int Emulator::opcode_49() { CPU_REG_LOAD(m_RegisterBC.lo, m_RegisterBC.lo); return 4; }
+int Emulator::opcode_4A() { CPU_REG_LOAD(m_RegisterBC.lo, m_RegisterDE.hi); return 4; }
+int Emulator::opcode_4B() { CPU_REG_LOAD(m_RegisterBC.lo, m_RegisterDE.lo); return 4; }
+int Emulator::opcode_4C() { CPU_REG_LOAD(m_RegisterBC.lo, m_RegisterHL.hi); return 4; }
+int Emulator::opcode_4D() { CPU_REG_LOAD(m_RegisterBC.lo, m_RegisterHL.lo); return 4; }
+int Emulator::opcode_4E() { CPU_REG_LOAD_ROM(m_RegisterBC.lo, m_RegisterHL.reg); return 8; }
+int Emulator::opcode_4F() { CPU_REG_LOAD(m_RegisterBC.lo, m_RegisterAF.hi); return 4; }
+
+int Emulator::opcode_50() { CPU_REG_LOAD(m_RegisterDE.hi, m_RegisterBC.hi); return 4; }
+int Emulator::opcode_51() { CPU_REG_LOAD(m_RegisterDE.hi, m_RegisterBC.lo); return 4; }
+int Emulator::opcode_52() { CPU_REG_LOAD(m_RegisterDE.hi, m_RegisterDE.hi); return 4; }
+int Emulator::opcode_53() { CPU_REG_LOAD(m_RegisterDE.hi, m_RegisterDE.lo); return 4; }
+int Emulator::opcode_54() { CPU_REG_LOAD(m_RegisterDE.hi, m_RegisterHL.hi); return 4; }
+int Emulator::opcode_55() { CPU_REG_LOAD(m_RegisterDE.hi, m_RegisterHL.lo); return 4; }
 int Emulator::opcode_56() { CPU_REG_LOAD_ROM(m_RegisterDE.hi, m_RegisterHL.reg); return 8; }
+
 int Emulator::opcode_57() { CPU_REG_LOAD(m_RegisterDE.hi, m_RegisterAF.hi); return 4; }
+
+int Emulator::opcode_58() { CPU_REG_LOAD(m_RegisterDE.lo, m_RegisterBC.hi); return 4; }
+int Emulator::opcode_59() { CPU_REG_LOAD(m_RegisterDE.lo, m_RegisterBC.lo); return 4; }
+int Emulator::opcode_5A() { CPU_REG_LOAD(m_RegisterDE.lo, m_RegisterDE.hi); return 4; }
+int Emulator::opcode_5B() { CPU_REG_LOAD(m_RegisterDE.lo, m_RegisterDE.lo); return 4; }
+int Emulator::opcode_5C() { CPU_REG_LOAD(m_RegisterDE.lo, m_RegisterHL.hi); return 4; }
+int Emulator::opcode_5D() { CPU_REG_LOAD(m_RegisterDE.lo, m_RegisterHL.lo); return 4; }
+int Emulator::opcode_5E() { CPU_REG_LOAD_ROM(m_RegisterDE.lo, m_RegisterHL.reg); return 8; }
+
 int Emulator::opcode_5F() { CPU_REG_LOAD(m_RegisterDE.lo, m_RegisterAF.hi); return 4; }
+
+int Emulator::opcode_60() { CPU_REG_LOAD(m_RegisterHL.hi, m_RegisterBC.hi); return 4; }
+int Emulator::opcode_61() { CPU_REG_LOAD(m_RegisterHL.hi, m_RegisterBC.lo); return 4; }
+int Emulator::opcode_62() { CPU_REG_LOAD(m_RegisterHL.hi, m_RegisterDE.hi); return 4; }
+int Emulator::opcode_63() { CPU_REG_LOAD(m_RegisterHL.hi, m_RegisterDE.lo); return 4; }
+int Emulator::opcode_64() { CPU_REG_LOAD(m_RegisterHL.hi, m_RegisterHL.hi); return 4; }
+int Emulator::opcode_65() { CPU_REG_LOAD(m_RegisterHL.hi, m_RegisterHL.lo); return 4; }
+int Emulator::opcode_66() { CPU_REG_LOAD_ROM(m_RegisterHL.hi, m_RegisterHL.reg); return 8; }
+
 int Emulator::opcode_67() { CPU_REG_LOAD(m_RegisterHL.hi, m_RegisterAF.hi); return 4; }
+
+int Emulator::opcode_68() { CPU_REG_LOAD(m_RegisterHL.lo, m_RegisterBC.hi); return 4; }
+int Emulator::opcode_69() { CPU_REG_LOAD(m_RegisterHL.lo, m_RegisterBC.lo); return 4; }
+int Emulator::opcode_6A() { CPU_REG_LOAD(m_RegisterHL.lo, m_RegisterDE.hi); return 4; }
+int Emulator::opcode_6B() { CPU_REG_LOAD(m_RegisterHL.lo, m_RegisterDE.lo); return 4; }
+int Emulator::opcode_6C() { CPU_REG_LOAD(m_RegisterHL.lo, m_RegisterHL.hi); return 4; }
+int Emulator::opcode_6D() { CPU_REG_LOAD(m_RegisterHL.lo, m_RegisterHL.lo); return 4; }
 int Emulator::opcode_6E() { CPU_REG_LOAD_ROM(m_RegisterHL.lo, m_RegisterHL.reg); return 8; }
+
 int Emulator::opcode_6F() { CPU_REG_LOAD(m_RegisterHL.lo, m_RegisterAF.hi); return 4; }
+
 int Emulator::opcode_70() { writeMemory(m_RegisterHL.reg, m_RegisterBC.hi); return 8; }
 int Emulator::opcode_71() { writeMemory(m_RegisterHL.reg, m_RegisterBC.lo); return 8; }
 int Emulator::opcode_72() { writeMemory(m_RegisterHL.reg, m_RegisterDE.hi); return 8; }
 int Emulator::opcode_73() { writeMemory(m_RegisterHL.reg, m_RegisterDE.lo); return 8; }
 int Emulator::opcode_74() { writeMemory(m_RegisterHL.reg, m_RegisterHL.hi); return 8; }
 int Emulator::opcode_75() { writeMemory(m_RegisterHL.reg, m_RegisterHL.lo); return 8; }
+
 int Emulator::opcode_77() { writeMemory(m_RegisterHL.reg, m_RegisterAF.hi); return 8; }
 int Emulator::opcode_78() { CPU_REG_LOAD(m_RegisterAF.hi, m_RegisterBC.hi); return 4; }
 int Emulator::opcode_79() { CPU_REG_LOAD(m_RegisterAF.hi, m_RegisterBC.lo); return 4; }
@@ -96,6 +145,7 @@ int Emulator::opcode_AD() { CPU_8BIT_XOR(m_RegisterAF.hi, m_RegisterHL.lo, false
 int Emulator::opcode_AE() { CPU_8BIT_XOR(m_RegisterAF.hi, readMemory(m_RegisterHL.reg), false); return 8; }
 int Emulator::opcode_AF() { CPU_8BIT_XOR(m_RegisterAF.hi, m_RegisterAF.hi, false); return 4; }
 int Emulator::opcode_B0() { CPU_8BIT_OR(m_RegisterAF.hi, m_RegisterBC.hi, false); return 4; }
+
 int Emulator::opcode_B1() { CPU_8BIT_OR(m_RegisterAF.hi, m_RegisterBC.lo, false); return 4; }
 int Emulator::opcode_B2() { CPU_8BIT_OR(m_RegisterAF.hi, m_RegisterDE.hi, false); return 4; }
 int Emulator::opcode_B3() { CPU_8BIT_OR(m_RegisterAF.hi, m_RegisterDE.lo, false); return 4; }
@@ -130,16 +180,24 @@ int Emulator::opcode_D8() { CPU_RETURN(true, FLAG_C, true); return 8; }
 int Emulator::opcode_DC() { CPU_CALL(true, FLAG_C, true); return 12; }
 int Emulator::opcode_E0() { CPU_LDH_INTO_DATA(); return 12; }
 int Emulator::opcode_E1() { CPU_STACK_POP(m_RegisterHL.reg); return 12; }
+
+int Emulator::opcode_E2() { writeMemory(0xFF00 + m_RegisterBC.lo, m_RegisterAF.hi); return 8; }
+
 int Emulator::opcode_E5() { CPU_STACK_PUSH(m_RegisterHL.reg); return 16; }
 int Emulator::opcode_E6() { CPU_AND(0, true); return 8; }
 int Emulator::opcode_EA() { CPU_LD_TO_ADDRESS(m_RegisterAF.hi);  return 16; }
 int Emulator::opcode_EE() { CPU_8BIT_XOR(m_RegisterAF.hi, 0, true); return 8; }
 int Emulator::opcode_F1() { CPU_STACK_POP(m_RegisterAF.reg); return 12; }
+int Emulator::opcode_F2() { CPU_REG_LOAD_ROM(m_RegisterAF.hi, (0xFF00 + m_RegisterBC.lo)); return 8; }
 int Emulator::opcode_F3() { m_InterruptMaster = false; return 4; }
 int Emulator::opcode_F5() { CPU_STACK_PUSH(m_RegisterAF.reg); return 16; }
 int Emulator::opcode_F6() { CPU_8BIT_OR(m_RegisterAF.hi, 0, true); return 8; }
+
+int Emulator::opcode_F9() { m_StackPointer.reg = m_RegisterHL.reg; return 8; }
+
 int Emulator::opcode_FB() { m_InterruptMaster = true; return 4; }
 int Emulator::opcode_FE() { CPU_CP(m_RegisterAF.hi, 0, true); return 8; }
+
 int Emulator::opcode_CB_38() { CPU_SRL(m_RegisterBC.hi); return 8; }
 int Emulator::opcode_CB_18() { CPU_RRC(m_RegisterBC.lo); return 8; }
 int Emulator::opcode_CB_19() { CPU_RRC(m_RegisterBC.lo); return 8; }

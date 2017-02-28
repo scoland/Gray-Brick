@@ -25,7 +25,7 @@ void Emulator::loadRom()
 	FILE * in;
 
 	// open file, flag 'rb' means 'read binary'
-	in = fopen("04.gb", "rb");
+	in = fopen("ld.gb", "rb");
 
 	// Put rom into memory
 	fread(m_CartridgeMemory, 1, 0x200000, in);
@@ -800,18 +800,69 @@ int Emulator::executeOpcode(BYTE opcode)
 	}
 	case 0x33: return opcode_33();
 	case 0x35: return opcode_35();
+	case 0x36:
+	{
+		BYTE n = readMemory(m_ProgramCounter);
+		m_ProgramCounter++;
+		writeMemory(m_RegisterHL.reg, n);
+		return 12;
+	}
 	case 0x39: return opcode_39();
+	case 0x3A:
+	{
+		m_RegisterAF.hi = readMemory(m_RegisterHL.reg);
+		m_RegisterHL.reg--;
+		return 8;
+	}
 	case 0x3C: return opcode_3C();
 	case 0x3D: return opcode_3D();
 	case 0x3E: return opcode_3E();
+	case 0x40: return opcode_40();
+	case 0x41: return opcode_41();
+	case 0x42: return opcode_42();
+	case 0x43: return opcode_43();
+	case 0x44: return opcode_44();
+	case 0x45: return opcode_45();
 	case 0x46: return opcode_46();
+	case 0x47: return opcode_47();
+	case 0x48: return opcode_48();
+	case 0x49: return opcode_49();
+	case 0x4A: return opcode_4A();
+	case 0x4B: return opcode_4B();
+	case 0x4C: return opcode_4C();
+	case 0x4D: return opcode_4D();
 	case 0x4E: return opcode_4E();
 	case 0x4F: return opcode_4F();
-	case 0x47: return opcode_47();
+	case 0x50: return opcode_50();
+	case 0x51: return opcode_51();
+	case 0x52: return opcode_52();
+	case 0x53: return opcode_53();
+	case 0x54: return opcode_54();
+	case 0x55: return opcode_55();
 	case 0x56: return opcode_56();
 	case 0x57: return opcode_57();
+	case 0x58: return opcode_58();
+	case 0x59: return opcode_59();
+	case 0x5A: return opcode_5A();
+	case 0x5B: return opcode_5B();
+	case 0x5C: return opcode_5C();
+	case 0x5D: return opcode_5D();
+	case 0x5E: return opcode_5E();
 	case 0x5F: return opcode_5F();
+	case 0x60: return opcode_60();
+	case 0x61: return opcode_61();
+	case 0x62: return opcode_62();
+	case 0x63: return opcode_63();
+	case 0x64: return opcode_64();
+	case 0x65: return opcode_65();
+	case 0x66: return opcode_66();
 	case 0x67: return opcode_67();
+	case 0x68: return opcode_68();
+	case 0x69: return opcode_69();
+	case 0x6A: return opcode_6A();
+	case 0x6B: return opcode_6B();
+	case 0x6C: return opcode_6C();
+	case 0x6D: return opcode_6D();
 	case 0x6E: return opcode_6E();
 	case 0x6F: return opcode_6F();
 	case 0x70: return opcode_70();
@@ -888,6 +939,7 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0xDC: return opcode_DC();
 	case 0xE0: return opcode_E0();
 	case 0xE1: return opcode_E1();
+	case 0xE2: return opcode_E2();
 	case 0xE5: return opcode_E5();
 	case 0xE6: return opcode_E6();
 	case 0xEA: return opcode_EA();
@@ -902,9 +954,33 @@ int Emulator::executeOpcode(BYTE opcode)
 		return 12;
 	}
 	case 0xF1: return opcode_F1();
+	case 0xF2: return opcode_F2();
 	case 0xF3: return opcode_F3();
 	case 0xF5: return opcode_F5();
 	case 0xF6: return opcode_F6();
+	case 0xF8:
+	{
+		BYTE n = readMemory(m_ProgramCounter);
+		m_ProgramCounter++;
+
+		m_RegisterAF.hi = CLEARBIT(m_RegisterAF.hi, FLAG_Z);
+		m_RegisterAF.hi = CLEARBIT(m_RegisterAF.hi, FLAG_N);
+
+		m_RegisterHL.reg = (m_StackPointer.reg + n) & 0xFFFF;
+
+		if (n > 0xFFFF)
+			m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+		else
+			m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_C);
+
+		if ((m_StackPointer.reg & 0xF) + (n & 0xF) > 0xF)
+			m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_H);
+		else
+			m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_H);
+
+		return 12;
+	}
+	case 0xF9: return opcode_F9();
 	case 0xFA:
 	{
 		WORD nn = readWord();

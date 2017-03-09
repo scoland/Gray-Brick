@@ -54,7 +54,10 @@ void Emulator::CPU_JUMP(bool useCondition, int flag, bool condition)
 		return;
 	}
 
-	m_ProgramCounter++;
+	if (ISBITSET(m_RegisterAF.lo, flag) == condition)
+	{
+		m_ProgramCounter = nn;
+	}
 }
 
 void Emulator::CPU_JUMP_IMMEDIATE(bool useCondition, int flag, bool condition)
@@ -213,10 +216,9 @@ void Emulator::CPU_RETURN(bool useCondition, int flag, bool condition)
 	}
 
 	// if flag value is equal to our condition, jump
-	if (condition == ISBITSET(m_RegisterAF.hi, flag))
+	if (ISBITSET(m_RegisterAF.lo, flag) == condition)
 	{
 		m_ProgramCounter = popWordOffStack();
-		return;
 	}
 	
 }
@@ -365,7 +367,7 @@ void Emulator::CPU_8BIT_OR(BYTE& reg, BYTE toOr, bool useImmediate)
 	m_RegisterAF.lo = 0;
 
 	if (reg == 0)
-		m_RegisterAF.hi = SETBIT(m_RegisterAF.hi, FLAG_Z);
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
 }
 
 void Emulator::CPU_AND(BYTE val, bool useImmediate)
@@ -381,9 +383,9 @@ void Emulator::CPU_AND(BYTE val, bool useImmediate)
 	m_RegisterAF.lo = 0;
 
 	if (m_RegisterAF.hi == 0)
-		m_RegisterAF.hi = SETBIT(m_RegisterAF.hi, FLAG_Z);
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
 
-	m_RegisterHL.hi = SETBIT(m_RegisterHL.hi, FLAG_H);
+	m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_H);
 }
 
 void Emulator::CPU_8BIT_ADD(BYTE& reg, BYTE toAdd, bool useImmediate, bool addCarry)
@@ -498,4 +500,34 @@ void Emulator::CPU_ADD_HL(WORD toAdd)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_H);
 	else
 		m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_H);
+}
+
+void Emulator::CPU_SWAP_NIBBLES(BYTE& reg)
+{
+	reg = (((reg && 0xF0) >> 4) | ((reg && 0x0F) << 4));
+
+	m_RegisterAF.lo = 0;
+
+	if (reg == 0)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z) ;
+}
+
+void Emulator::CPU_RESTART(BYTE address)
+{
+	pushWordOntoStack(m_ProgramCounter);
+	m_ProgramCounter = address;
+}
+
+void Emulator::CPU_RCLA()
+{
+	bool old7 = ISBITSET(m_RegisterAF.hi, 7);
+	m_RegisterAF.hi <<= 1;
+
+	m_RegisterAF.lo = 0;
+
+	if (m_RegisterAF.hi == 0)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
+
+	if (old7)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
 }

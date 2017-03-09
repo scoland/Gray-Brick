@@ -111,11 +111,14 @@ private:
 	void CPU_8BIT_ADD(BYTE& reg, BYTE toAdd, bool useImmediate, bool addCarry);
 	void CPU_CP(BYTE reg, BYTE toCompare, bool useImmediate);
 	void CPU_ADD_HL(WORD reg);
+	void CPU_SWAP_NIBBLES(BYTE& reg);
 
 	void CPU_8BIT_OR(BYTE& reg, BYTE toOr, bool useImmediate);
 	void CPU_AND(BYTE val, bool useImmediate);
 
 	void CPU_SRL(BYTE& reg);
+	void CPU_RESTART(BYTE address);
+	void CPU_RCLA();
 	
 	BYTE get_byte_from_pc();
 	WORD get_word_from_pc();
@@ -151,6 +154,9 @@ private:
 	// Booleans for the memory bank controller types. Most games are MBC1.
 	bool m_MBC1;
 	bool m_MBC2;
+
+
+	int m_ScanlineCounter;
 
 	// Which rom bank is currently loaded into memory space 0x4000-0x7FFF
 	BYTE m_CurrentROMBank;

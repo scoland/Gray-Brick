@@ -31,7 +31,7 @@ int Emulator::opcode_1B() { CPU_16BIT_DEC(m_RegisterDE.reg); return 8; }
 
 int Emulator::opcode_1C() { CPU_8BIT_INC(m_RegisterDE.lo); return 4; }
 int Emulator::opcode_1D() { CPU_8BIT_DEC(m_RegisterDE.lo); return 4; }
-int Emulator::opcode_1E() { CPU_8BIT_LOAD(m_RegisterDE.hi); return 8; }
+int Emulator::opcode_1E() { CPU_8BIT_LOAD(m_RegisterDE.lo); return 8; }
 int Emulator::opcode_1F() { CPU_RRC(m_RegisterAF.hi); return 4; }
 int Emulator::opcode_20() { CPU_JUMP_IMMEDIATE(true, FLAG_Z, false); return 8; }
 int Emulator::opcode_21() { CPU_16BIT_LOAD(m_RegisterHL.reg); return 12; }
@@ -52,6 +52,7 @@ int Emulator::opcode_30() { CPU_JUMP_IMMEDIATE(true, FLAG_C, false); return 8; }
 int Emulator::opcode_31() { CPU_16BIT_LOAD(m_StackPointer.reg); return 12; }
 int Emulator::opcode_33() { CPU_16BIT_INC(m_StackPointer.reg); return 8; }
 int Emulator::opcode_35() { CPU_8BIT_MEMORY_DEC(m_RegisterHL.reg); return 12; }
+int Emulator::opcode_37() { CPU_SET_CARRY_FLAG(); return 4; }
 int Emulator::opcode_38() { CPU_JUMP_IMMEDIATE(true, FLAG_C, true); return 8; }
 int Emulator::opcode_39() { CPU_ADD_HL(m_StackPointer.reg); return 8; }
 
@@ -60,14 +61,17 @@ int Emulator::opcode_3B() { CPU_16BIT_DEC(m_StackPointer.reg); return 8; }
 int Emulator::opcode_3C() { CPU_8BIT_INC(m_RegisterAF.hi); return 4; }
 int Emulator::opcode_3D() { CPU_8BIT_DEC(m_RegisterAF.hi); return 4; }
 int Emulator::opcode_3E() { CPU_8BIT_LOAD(m_RegisterAF.hi); return 8; }
+int Emulator::opcode_3F() { CPU_COMPLEMENT_CARRY_FLAG(); return 4; }
+
 int Emulator::opcode_40() { CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterBC.hi); return 4; }
 int Emulator::opcode_41() { CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterBC.lo); return 4; }
 int Emulator::opcode_42() { CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterDE.hi); return 4; }
-int Emulator::opcode_43() { CPU_REG_LOAD(m_RegisterDE.hi, m_RegisterBC.hi); return 4; }
+int Emulator::opcode_43() { CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterDE.lo); return 4; }
 int Emulator::opcode_44() { CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterHL.hi); return 4; }
 int Emulator::opcode_45() { CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterHL.lo); return 4; }
 int Emulator::opcode_46() { CPU_REG_LOAD_ROM(m_RegisterBC.hi, m_RegisterHL.reg); return 8; }
 int Emulator::opcode_47() { CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterAF.hi); return 4; }
+
 int Emulator::opcode_48() { CPU_REG_LOAD(m_RegisterBC.lo, m_RegisterBC.hi); return 4; }
 int Emulator::opcode_49() { CPU_REG_LOAD(m_RegisterBC.lo, m_RegisterBC.lo); return 4; }
 int Emulator::opcode_4A() { CPU_REG_LOAD(m_RegisterBC.lo, m_RegisterDE.hi); return 4; }
@@ -125,6 +129,7 @@ int Emulator::opcode_74() { writeMemory(m_RegisterHL.reg, m_RegisterHL.hi); retu
 int Emulator::opcode_75() { writeMemory(m_RegisterHL.reg, m_RegisterHL.lo); return 8; }
 
 int Emulator::opcode_77() { writeMemory(m_RegisterHL.reg, m_RegisterAF.hi); return 8; }
+
 int Emulator::opcode_78() { CPU_REG_LOAD(m_RegisterAF.hi, m_RegisterBC.hi); return 4; }
 int Emulator::opcode_79() { CPU_REG_LOAD(m_RegisterAF.hi, m_RegisterBC.lo); return 4; }
 int Emulator::opcode_7A() { CPU_REG_LOAD(m_RegisterAF.hi, m_RegisterDE.hi); return 4; }
@@ -135,13 +140,15 @@ int Emulator::opcode_7E() { CPU_REG_LOAD_ROM(m_RegisterAF.hi, m_RegisterHL.reg);
 int Emulator::opcode_7F() { CPU_REG_LOAD(m_RegisterAF.hi, m_RegisterAF.hi); return 4; }
 int Emulator::opcode_80() { CPU_8BIT_ADD(m_RegisterAF.hi, m_RegisterBC.hi, false, false); return 4; }
 int Emulator::opcode_81() { CPU_8BIT_ADD(m_RegisterAF.hi, m_RegisterBC.lo, false, false); return 4; }
-int Emulator::opcode_82() { CPU_8BIT_ADD(m_RegisterAF.hi, m_RegisterDE.lo, false, false); return 4; }
+int Emulator::opcode_82() { CPU_8BIT_ADD(m_RegisterAF.hi, m_RegisterDE.hi, false, false); return 4; }
 int Emulator::opcode_83() { CPU_8BIT_ADD(m_RegisterAF.hi, m_RegisterDE.lo, false, false); return 4; }
 int Emulator::opcode_84() { CPU_8BIT_ADD(m_RegisterAF.hi, m_RegisterHL.hi, false, false); return 4; }
 int Emulator::opcode_85() { CPU_8BIT_ADD(m_RegisterAF.hi, m_RegisterHL.lo, false, false); return 4; }
 int Emulator::opcode_86() { CPU_8BIT_ADD(m_RegisterAF.hi, readMemory(m_RegisterHL.reg), false, false); return 8; }
 int Emulator::opcode_87() { CPU_8BIT_ADD(m_RegisterAF.hi, m_RegisterAF.hi, false, false); return 4; }
+int Emulator::opcode_8E() { CPU_8BIT_ADD(m_RegisterAF.hi, readMemory(m_RegisterHL.reg), false, true); return 8; }
 int Emulator::opcode_90() { CPU_8BIT_SUB(m_RegisterAF.hi, m_RegisterBC.hi, false, false); return 4; }
+int Emulator::opcode_96() { CPU_8BIT_SUB(m_RegisterAF.hi, readMemory(m_RegisterHL.reg), false, false); return 8; }
 int Emulator::opcode_A0() { CPU_AND(m_RegisterBC.hi, false); return 4; }
 int Emulator::opcode_A1() { CPU_AND(m_RegisterBC.lo, false); return 4; }
 int Emulator::opcode_A2() { CPU_AND(m_RegisterDE.hi, false); return 4; }
@@ -157,8 +164,8 @@ int Emulator::opcode_AC() { CPU_8BIT_XOR(m_RegisterAF.hi, m_RegisterHL.hi, false
 int Emulator::opcode_AD() { CPU_8BIT_XOR(m_RegisterAF.hi, m_RegisterHL.lo, false); return 4; }
 int Emulator::opcode_AE() { CPU_8BIT_XOR(m_RegisterAF.hi, readMemory(m_RegisterHL.reg), false); return 8; }
 int Emulator::opcode_AF() { CPU_8BIT_XOR(m_RegisterAF.hi, m_RegisterAF.hi, false); return 4; }
-int Emulator::opcode_B0() { CPU_8BIT_OR(m_RegisterAF.hi, m_RegisterBC.hi, false); return 4; }
 
+int Emulator::opcode_B0() { CPU_8BIT_OR(m_RegisterAF.hi, m_RegisterBC.hi, false); return 4; }
 int Emulator::opcode_B1() { CPU_8BIT_OR(m_RegisterAF.hi, m_RegisterBC.lo, false); return 4; }
 int Emulator::opcode_B2() { CPU_8BIT_OR(m_RegisterAF.hi, m_RegisterDE.hi, false); return 4; }
 int Emulator::opcode_B3() { CPU_8BIT_OR(m_RegisterAF.hi, m_RegisterDE.lo, false); return 4; }
@@ -172,6 +179,7 @@ int Emulator::opcode_BA() { CPU_CP(m_RegisterAF.hi, m_RegisterDE.hi, false); ret
 int Emulator::opcode_BB() { CPU_CP(m_RegisterAF.hi, m_RegisterDE.lo, false); return 4; }
 int Emulator::opcode_BC() { CPU_CP(m_RegisterAF.hi, m_RegisterHL.hi, false); return 4; }
 int Emulator::opcode_BD() { CPU_CP(m_RegisterAF.hi, m_RegisterHL.lo, false); return 4; }
+int Emulator::opcode_BE() { CPU_CP(m_RegisterAF.hi, readMemory(m_RegisterHL.reg), false); return 8; }
 int Emulator::opcode_BF() { CPU_CP(m_RegisterAF.hi, m_RegisterAF.hi, false); return 4; }
 int Emulator::opcode_C0() { CPU_RETURN(true, FLAG_Z, false); return 8; }
 int Emulator::opcode_C1() { CPU_STACK_POP(m_RegisterBC.reg); return 12; }

@@ -202,7 +202,7 @@ void Emulator::CPU_LDH_INTO_DATA()
 	BYTE val = readMemory(m_ProgramCounter);
 	m_ProgramCounter++;
 
-	BYTE address = 0xFF00 + val;
+	WORD address = 0xFF00 + val;
 	writeMemory(address, m_RegisterAF.hi);
 }
 
@@ -529,5 +529,27 @@ void Emulator::CPU_RCLA()
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
 
 	if (old7)
+	{
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+		m_RegisterAF.hi = SETBIT(m_RegisterAF.hi, 0);
+	}
+}
+
+void Emulator::CPU_SET_CARRY_FLAG() 
+{
+	m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_N);
+	m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_H);
+	m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+}
+
+void Emulator::CPU_COMPLEMENT_CARRY_FLAG()
+{
+	if (ISBITSET(m_RegisterAF.lo, FLAG_C))
+	{
+		m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_C);
+	}
+	else
+	{
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+	}
 }

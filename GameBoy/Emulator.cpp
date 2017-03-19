@@ -4,6 +4,7 @@
 
 #include <iostream>;
 #include <iomanip>;
+#include <string>;
 
 // To use fopen
 #pragma warning(disable:4996)
@@ -27,7 +28,7 @@ void Emulator::loadRom()
 	FILE * in;
 
 	// open file, flag 'rb' means 'read binary'
-	in = fopen("07.gb", "rb");
+	in = fopen("11.gb", "rb");
 
 	// Put rom into memory
 	fread(m_CartridgeMemory, 1, 0x200000, in);
@@ -141,7 +142,7 @@ void Emulator::resetCPU()
 	// Sets the current rom bank
 	m_CurrentROMBank = 1;
 
-	// Clear out RANBanks
+	// Clear out RAMBanks
 	memset(&m_RAMBanks, 0, sizeof(m_RAMBanks));
 	m_CurrentRAMBank = 0;
 }
@@ -185,13 +186,10 @@ void Emulator::writeMemory(WORD address, BYTE data)
 			setClockFreq();
 		}
 	}
-	else if (address == 0xFF01) {
-		printf("Test");
-	}
 	// Blargg output
 	else if (address == 0xFF02 && data == 0x81)
 	{
-		printf("Output: ", readMemory(0xFF01));
+		std::cout << readMemory(0xFF01);
 	}
 	// Trap divider register
 	else if (address == 0xFF04)
@@ -748,7 +746,7 @@ int Emulator::executeNextOpcode()
 
 int Emulator::executeOpcode(BYTE opcode)
 {
-	// std::cout << "A:" << std::setfill('0') << std::setw(4) << m_RegisterAF.reg << " BC:" << std::setfill('0') << std::setw(4) << m_RegisterBC.reg << " DE:" << std::setfill('0') << std::setw(4) << m_RegisterDE.reg << " HL:" << std::setfill('0') << std::setw(4) << m_RegisterHL.reg << " PC:" << std::setfill('0') << std::setw(4) << (m_ProgramCounter - 1) << " " << opcode_names[opcode] << " : 0x" << std::hex << static_cast<int>(opcode) << std::endl;
+	// std::cout << "A:" << std::setfill('0') << std::setw(4) << m_RegisterAF.reg << " " << debugFlags(m_RegisterAF.lo) << " BC:" << std::setfill('0') << std::setw(4) << m_RegisterBC.reg << " DE:" << std::setfill('0') << std::setw(4) << m_RegisterDE.reg << " HL:" << std::setfill('0') << std::setw(4) << m_RegisterHL.reg << " PC:" << std::setfill('0') << std::setw(4) << (m_ProgramCounter - 1) << " " << opcode_names[opcode] << " : 0x" << std::hex << static_cast<int>(opcode) << std::endl;
 	switch (opcode)
 	{
 	case 0x00: return opcode_00();
@@ -838,6 +836,7 @@ int Emulator::executeOpcode(BYTE opcode)
 		writeMemory(m_RegisterHL.reg, n);
 		return 12;
 	}
+	case 0x37: return opcode_37();
 	case 0x38: return opcode_38();
 	case 0x39: return opcode_39();
 	case 0x3A:
@@ -850,6 +849,7 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0x3C: return opcode_3C();
 	case 0x3D: return opcode_3D();
 	case 0x3E: return opcode_3E();
+	case 0x3F: return opcode_3F();
 	case 0x40: return opcode_40();
 	case 0x41: return opcode_41();
 	case 0x42: return opcode_42();
@@ -920,7 +920,10 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0x84: return opcode_84();
 	case 0x85: return opcode_85();
 	case 0x86: return opcode_86();
+	case 0x87: return opcode_87();
+	case 0x8E: return opcode_8E();
 	case 0x90: return opcode_90();
+	case 0x96: return opcode_96();
 	case 0xA0: return opcode_A0();
 	case 0xA1: return opcode_A1();
 	case 0xA2: return opcode_A2();
@@ -950,6 +953,7 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0xBB: return opcode_BB();
 	case 0xBC: return opcode_BC();
 	case 0xBD: return opcode_BD();
+	case 0xBE: return opcode_BE();
 	case 0xBF: return opcode_BF();
 	case 0xC0: return opcode_C0();
 	case 0xC1: return opcode_C1();
@@ -1123,7 +1127,7 @@ int Emulator::executeExtendedOpcode()
 	BYTE opcode = readMemory(m_ProgramCounter);
 	m_ProgramCounter++;
 
-	// std::cout << "A:" << std::setfill('0') << std::setw(4) << m_RegisterAF.reg << " BC:" << std::setfill('0') << std::setw(4) << m_RegisterBC.reg << " DE:" << std::setfill('0') << std::setw(4) << m_RegisterDE.reg << " HL:" << std::setfill('0') << std::setw(4) << m_RegisterHL.reg << " PC:" << std::setfill('0') << std::setw(4) << (m_ProgramCounter - 1) << " " << opcode_names[opcode] << " : 0x" << std::hex << static_cast<int>(opcode) << std::endl;
+	// std::cout << "A:" << std::setfill('0') << std::setw(4) << m_RegisterAF.reg << " " << debugFlags(m_RegisterAF.lo) << " BC:" << std::setfill('0') << std::setw(4) << m_RegisterBC.reg << " DE:" << std::setfill('0') << std::setw(4) << m_RegisterDE.reg << " HL:" << std::setfill('0') << std::setw(4) << m_RegisterHL.reg << " PC:" << std::setfill('0') << std::setw(4) << (m_ProgramCounter - 1) << " " << opcode_names[opcode] << " : 0x" << std::hex << static_cast<int>(opcode) << std::endl;
 	switch (opcode)
 	{
 	case 0x18: return opcode_CB_18();
@@ -1147,4 +1151,31 @@ int Emulator::executeExtendedOpcode()
 		return 0;
 	}
 
+}
+
+std::string Emulator::debugFlags(BYTE flagRegister)
+{
+	std::string outputFlags = "F:";
+
+	if (ISBITSET(flagRegister, FLAG_Z))
+		outputFlags += "Z";
+	else
+		outputFlags += "-";
+
+	if (ISBITSET(flagRegister, FLAG_N))
+		outputFlags += "N";
+	else
+		outputFlags += "-";
+
+	if (ISBITSET(flagRegister, FLAG_H))
+		outputFlags += "H";
+	else
+		outputFlags += "-";
+
+	if (ISBITSET(flagRegister, FLAG_C))
+		outputFlags += "C";
+	else
+		outputFlags += "-";
+
+	return outputFlags;
 }

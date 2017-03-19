@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string.h>
+#include <string>
 #include <stdio.h>
 
 typedef unsigned char BYTE;
@@ -48,6 +48,9 @@ public:
 	void update();
 private:
 	void resetCPU();
+
+	// Debug
+	std::string debugFlags(BYTE flagRegister);
 
 	// Memory functions
 	BYTE readMemory(WORD address) const;
@@ -119,6 +122,8 @@ private:
 	void CPU_SRL(BYTE& reg);
 	void CPU_RESTART(BYTE address);
 	void CPU_RCLA();
+	void CPU_SET_CARRY_FLAG();
+	void CPU_COMPLEMENT_CARRY_FLAG();
 	
 	BYTE get_byte_from_pc();
 	WORD get_word_from_pc();

@@ -120,6 +120,26 @@ void Emulator::CPU_8BIT_INC(BYTE& reg)
 
 }
 
+void Emulator::CPU_8BIT_MEMORY_INC(WORD address)
+{
+	BYTE initial = readMemory(address);
+	BYTE afterInc = initial++;
+
+	writeMemory(address, afterInc);
+
+	if (afterInc == 0)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
+	else
+		m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_Z);
+
+	m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_N);
+
+	if ((initial & 0xF) == 0xF)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_H);
+	else
+		m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_H);
+}
+
 void Emulator::CPU_8BIT_DEC(BYTE& reg)
 {
 	BYTE before = reg;
@@ -459,7 +479,6 @@ void Emulator::CPU_CP(BYTE reg, BYTE toCompare, bool useImmediate)
 	if (initial < toSubtract)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
 
-
 	SIGNED_WORD htest = initial & 0xF;
 	htest -= (toSubtract & 0xF);
 
@@ -471,15 +490,15 @@ void Emulator::CPU_SRL(BYTE& reg)
 {
 	int lsb = ISBITSET(reg, 0);
 
-	reg >>= 1;
+reg >>= 1;
 
-	m_RegisterAF.lo = 0;
+m_RegisterAF.lo = 0;
 
-	if (reg == 0)
-		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
+if (reg == 0)
+m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
 
-	if (lsb)
-		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+if (lsb)
+m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
 }
 
 void Emulator::CPU_ADD_HL(WORD toAdd)
@@ -487,7 +506,7 @@ void Emulator::CPU_ADD_HL(WORD toAdd)
 	WORD initial = m_RegisterHL.reg;
 
 	m_RegisterHL.reg += toAdd;
-	
+
 	m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_N);
 
 	if ((initial + toAdd) > 0xFFFF)
@@ -495,8 +514,7 @@ void Emulator::CPU_ADD_HL(WORD toAdd)
 	else
 		m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_C);
 
-
-	if (((initial & 0xFF00) & 0xF) + ((toAdd >> 8) & 0xF))
+	if ((initial & 0xfff) + (toAdd & 0xfff) > 0xfff)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_H);
 	else
 		m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_H);
@@ -509,7 +527,7 @@ void Emulator::CPU_SWAP_NIBBLES(BYTE& reg)
 	m_RegisterAF.lo = 0;
 
 	if (reg == 0)
-		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z) ;
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
 }
 
 void Emulator::CPU_RESTART(BYTE address)
@@ -535,7 +553,7 @@ void Emulator::CPU_RCLA()
 	}
 }
 
-void Emulator::CPU_SET_CARRY_FLAG() 
+void Emulator::CPU_SET_CARRY_FLAG()
 {
 	m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_N);
 	m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_H);
@@ -552,4 +570,63 @@ void Emulator::CPU_COMPLEMENT_CARRY_FLAG()
 	{
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
 	}
+}
+
+void Emulator::CPU_ADD_SP()
+{
+	WORD before = m_StackPointer.reg;
+	BYTE n = readMemory(m_ProgramCounter);
+
+	m_StackPointer.reg += n;
+
+	m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_Z);
+	m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_N);
+
+	if ((before & 0xfff) + (n & 0xfff) > 0xfff)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_H);
+	else
+		m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_H);
+	
+	if ((m_StackPointer.reg & 0x10000) != 0)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+	else
+		m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_C);
+
+}
+
+// Rotate A left through carry
+void Emulator::CPU_RLA()
+{
+	bool oldCarry = ISBITSET(m_RegisterAF.lo, FLAG_C);
+	bool newCarry = ISBITSET(m_RegisterAF.hi, 7);
+	
+	m_RegisterAF.hi <<= 1;
+
+	if (oldCarry)
+		m_RegisterAF.hi = SETBIT(m_RegisterAF.hi, 0);
+
+	m_RegisterAF.lo = 0;
+
+	if (m_RegisterAF.hi == 0)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.hi, FLAG_Z);
+
+	if (newCarry)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+
+}
+
+// RRCA - Rotate A right. Old bit 0 to carry flag
+void Emulator::CPU_RRCA()
+{
+	bool newCarry = ISBITSET(m_RegisterAF.hi, 0);
+
+	m_RegisterAF.hi >> 1;
+
+	m_RegisterAF.lo = 0;
+
+	if (m_RegisterAF.hi == 0)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
+
+	if (newCarry)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
 }

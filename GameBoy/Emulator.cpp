@@ -28,7 +28,7 @@ void Emulator::loadRom()
 	FILE * in;
 
 	// open file, flag 'rb' means 'read binary'
-	in = fopen("11.gb", "rb");
+	in = fopen("05.gb", "rb");
 
 	// Put rom into memory
 	fread(m_CartridgeMemory, 1, 0x200000, in);
@@ -586,7 +586,6 @@ bool Emulator::isLCDEnabled() const
 }
 
 
-
 // OAM DMA. Basically a circuit designed to copy really fast. In this case, copy sprite data really fast.
 // Writing to this register launches a DMA transfer from ROM or RAM to OAM memory (sprite attribute table). 
 // The written value specifies the transfer source address divided by 100
@@ -773,6 +772,7 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0x0C: return opcode_0C();
 	case 0x0D: return opcode_0D();
 	case 0x0E: return opcode_0E();
+	case 0x0F: return opcode_0F();
 	case 0x09: return opcode_09();
 	case 0x10:
 	{
@@ -785,6 +785,7 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0x14: return opcode_14();
 	case 0x15: return opcode_15();
 	case 0x16: return opcode_16();
+	case 0x17: return opcode_17();
 	case 0x18: return opcode_18();
 	case 0x19: return opcode_19();
 	case 0x1A: return opcode_1A();
@@ -828,6 +829,7 @@ int Emulator::executeOpcode(BYTE opcode)
 		return 8;
 	}
 	case 0x33: return opcode_33();
+	case 0x34: return opcode_34();
 	case 0x35: return opcode_35();
 	case 0x36:
 	{
@@ -921,15 +923,37 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0x85: return opcode_85();
 	case 0x86: return opcode_86();
 	case 0x87: return opcode_87();
+	case 0x88: return opcode_88();
+	case 0x89: return opcode_89();
+	case 0x8A: return opcode_8A();
+	case 0x8B: return opcode_8B();
+	case 0x8C: return opcode_8C();
+	case 0x8D: return opcode_8D();
 	case 0x8E: return opcode_8E();
+	case 0x8F: return opcode_8F();
 	case 0x90: return opcode_90();
+	case 0x91: return opcode_91();
+	case 0x92: return opcode_92();
+	case 0x93: return opcode_93();
+	case 0x94: return opcode_94();
+	case 0x95: return opcode_95();
 	case 0x96: return opcode_96();
+	case 0x97: return opcode_97();
+	case 0x98: return opcode_98();
+	case 0x99: return opcode_99();
+	case 0x9A: return opcode_9A();
+	case 0x9B: return opcode_9B();
+	case 0x9C: return opcode_9C();
+	case 0x9D: return opcode_9D();
+	case 0x9E: return opcode_9E();
+	case 0x9F: return opcode_9F();
 	case 0xA0: return opcode_A0();
 	case 0xA1: return opcode_A1();
 	case 0xA2: return opcode_A2();
 	case 0xA3: return opcode_A3();
 	case 0xA4: return opcode_A4();
 	case 0xA5: return opcode_A5();
+	case 0xA6: return opcode_A6();
 	case 0xA7: return opcode_A7();
 	case 0xA8: return opcode_A8();
 	case 0xA9: return opcode_A9();
@@ -992,6 +1016,7 @@ int Emulator::executeOpcode(BYTE opcode)
 	{
 		return 0;
 	}
+	case 0xDE: return opcode_DE();
 	case 0xDF: return opcode_DF();
 	case 0xE0: return opcode_E0();
 	case 0xE1: return opcode_E1();
@@ -999,6 +1024,7 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0xE5: return opcode_E5();
 	case 0xE6: return opcode_E6();
 	case 0xE7: return opcode_E7();
+	case 0xE8: return opcode_E8();
 	case 0xE9:
 	{
 		m_ProgramCounter = m_RegisterHL.reg;
@@ -1056,38 +1082,6 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0xFB: return opcode_FB();
 	case 0xFE: return opcode_FE();
 	case 0xFF: return opcode_FF();
-
-	/*
-	// no-op
-	case 0x00: return 4;
-
-	// Loads
-	case 0x06: CPU_8BIT_LOAD(m_RegisterBC.hi); return 8;
-	case 0x0E: CPU_8BIT_LOAD(m_RegisterBC.lo); return 8;
-	case 0x16: CPU_8BIT_LOAD(m_RegisterDE.hi); return 8;
-	case 0x1E: CPU_8BIT_LOAD(m_RegisterDE.lo); return 8;
-	case 0x26: CPU_8BIT_LOAD(m_RegisterHL.hi); return 8;
-	case 0x2E: CPU_8BIT_LOAD(m_RegisterHL.lo); return 8;
-
-	case 0x2A: CPU_REG_LOAD_ROM(m_RegisterAF.hi, m_RegisterHL.reg); CPU_16BIT_INC(m_RegisterHL.reg); return 8;
-
-	case 0x01: CPU_16BIT_LOAD(m_RegisterBC.reg); return 12;
-	case 0x11: CPU_16BIT_LOAD(m_RegisterDE.reg); return 12;
-	case 0x21: CPU_16BIT_LOAD(m_RegisterHL.reg); return 12;
-	case 0x31: CPU_16BIT_LOAD(m_StackPointer.reg); return 12;
-
-	case 0x7F: CPU_REG_LOAD(m_RegisterAF.hi, m_RegisterAF.hi); return 4;
-	case 0x47: CPU_REG_LOAD(m_RegisterBC.hi, m_RegisterAF.hi); return 4;
-	case 0x4F: CPU_REG_LOAD(m_RegisterBC.lo, m_RegisterAF.hi); return 4;
-	case 0x57: CPU_REG_LOAD(m_RegisterDE.hi, m_RegisterAF.hi); return 4;
-	case 0x5F: CPU_REG_LOAD(m_RegisterDE.lo, m_RegisterAF.hi); return 4;
-	case 0x67: CPU_REG_LOAD(m_RegisterHL.hi, m_RegisterAF.hi); return 4;
-	case 0x6F: CPU_REG_LOAD(m_RegisterHL.lo, m_RegisterAF.hi); return 4;
-
-	// Jumps
-	case 0xC3: CPU_JUMP(0, false, 0); return 12;
-	case 0xCD: CPU_CALL(0, false, 0); return 12;
-	*/
 
 	default:
 		printf("Unknown opcode: ", opcode);

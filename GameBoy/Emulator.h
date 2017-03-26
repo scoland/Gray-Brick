@@ -97,6 +97,7 @@ private:
 	void CPU_8BIT_INC(BYTE& reg);
 	void CPU_8BIT_DEC(BYTE& reg);
 	void CPU_8BIT_MEMORY_DEC(WORD address);
+	void CPU_8BIT_MEMORY_INC(WORD address);
 	void CPU_16BIT_INC(WORD& reg);
 	void CPU_16BIT_DEC(WORD& reg);
 	void CPU_8BIT_XOR(BYTE& reg, BYTE toXOR, bool useImmediate);
@@ -124,6 +125,12 @@ private:
 	void CPU_RCLA();
 	void CPU_SET_CARRY_FLAG();
 	void CPU_COMPLEMENT_CARRY_FLAG();
+
+	void CPU_ADD_SP();
+
+	// Rotates
+	void CPU_RLA();
+	void CPU_RRCA();
 	
 	BYTE get_byte_from_pc();
 	WORD get_word_from_pc();
@@ -153,6 +160,7 @@ private:
 	Register m_RegisterHL;
 
 	WORD m_ProgramCounter;
+
 	// Some instructions access either the hi/lo values of the SP so we use our register union to facilitate this
 	Register m_StackPointer;
 

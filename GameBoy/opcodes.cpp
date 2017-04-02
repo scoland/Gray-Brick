@@ -248,9 +248,13 @@ void Emulator::CPU_STACK_PUSH(WORD val)
 	pushWordOntoStack(val);
 }
 
-void Emulator::CPU_STACK_POP(WORD& reg)
+void Emulator::CPU_STACK_POP(WORD& reg, bool isAF)
 {
 	reg = popWordOffStack();
+	// If we're popping onto the AF register we need to clear out the unused flag bits just in case
+	if (isAF) {
+		reg &= 0xfff0;
+	}
 }
 
 void Emulator::CPU_LD_I(BYTE& reg, WORD& address)
@@ -299,7 +303,7 @@ void Emulator::CPU_8BIT_SUB(BYTE& reg, BYTE subtracting, bool useImmediate, bool
 }
 
 // rotate right through carry
-void Emulator::CPU_RRC(BYTE& reg)
+void Emulator::CPU_RR(BYTE& reg, bool setZ)
 {
 	bool isCarrySet = ISBITSET(m_RegisterAF.lo, FLAG_C);
 	bool isLSBSet = ISBITSET(reg, 0);
@@ -316,6 +320,29 @@ void Emulator::CPU_RRC(BYTE& reg)
 	if (isCarrySet)
 		reg = SETBIT(reg, 7);
 	
+	// Make sure we're supposed to set the Z flag. The non CB RR opcodes don't set it.
+	if (setZ && reg == 0)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
+}
+
+// rotate left through carry
+void Emulator::CPU_RL(BYTE& reg)
+{
+	bool isCarrySet = ISBITSET(m_RegisterAF.lo, FLAG_C);
+	bool isMSBSet = ISBITSET(reg, 7);
+
+	m_RegisterAF.lo = 0;
+
+	reg <<= 1;
+
+	if (isMSBSet)
+	{
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+	}
+
+	if (isCarrySet)
+		reg = SETBIT(reg, 0);
+
 	if (reg == 0)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
 
@@ -360,7 +387,7 @@ void Emulator::CPU_ADC(BYTE toAdd)
 	else
 		m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_Z);
 
-	m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_N);
+	m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_N);
 
 	if ((reg & 0xf) + (toAdd & 0xf) + (carry & 0xf) > 0xf)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_H);
@@ -440,12 +467,12 @@ void Emulator::CPU_8BIT_ADD(BYTE& reg, BYTE toAdd, bool useImmediate, bool addCa
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
 
 	WORD htest = (initial & 0xF);
-	htest += (initial & 0xF);
+	htest += (adding & 0xF);
 
 	if (htest > 0xF)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_H);
 
-	if ((initial + initial) > 0xFF)
+	if ((initial + adding) > 0xFF)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
 }
 
@@ -488,17 +515,17 @@ void Emulator::CPU_CP(BYTE reg, BYTE toCompare, bool useImmediate)
 
 void Emulator::CPU_SRL(BYTE& reg)
 {
-	int lsb = ISBITSET(reg, 0);
+	bool lsb = ISBITSET(reg, 0);
 
-reg >>= 1;
+	reg >>= 1;
 
-m_RegisterAF.lo = 0;
+	m_RegisterAF.lo = 0;
 
-if (reg == 0)
-m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
+	if (reg == 0)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
 
-if (lsb)
-m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+	if (lsb)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
 }
 
 void Emulator::CPU_ADD_HL(WORD toAdd)
@@ -619,9 +646,13 @@ void Emulator::CPU_RLA()
 void Emulator::CPU_RRCA()
 {
 	bool newCarry = ISBITSET(m_RegisterAF.hi, 0);
+	bool truncatedBit = ISBITSET(m_RegisterAF.hi, 0);
 
-	m_RegisterAF.hi >> 1;
+	m_RegisterAF.hi >>= 1;
 
+	if (truncatedBit)
+		m_RegisterAF.hi = SETBIT(m_RegisterAF.hi, 7);
+	
 	m_RegisterAF.lo = 0;
 
 	if (m_RegisterAF.hi == 0)
@@ -629,4 +660,107 @@ void Emulator::CPU_RRCA()
 
 	if (newCarry)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+}
+
+// RLC n Rotate n left. Old bit 7 to Carry flag
+void Emulator::CPU_RLC(BYTE& reg)
+{
+	bool newCarry = ISBITSET(reg, 7);
+	bool truncatedBit = ISBITSET(reg, 7);
+
+	m_RegisterAF.hi <<= 1;
+
+	if (truncatedBit)
+		reg = SETBIT(reg, 0);
+
+	m_RegisterAF.lo = 0;
+
+	if (reg == 0)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
+
+	if (newCarry)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+}
+
+// RRC n Rotate n right. Old bit 0 to Carry flag
+void Emulator::CPU_RRC(BYTE& reg)
+{
+	bool newCarry = ISBITSET(reg, 0);
+	bool truncatedBit = ISBITSET(reg, 0);
+
+	reg >>= 1;
+
+	if (truncatedBit)
+		reg = SETBIT(reg, 7);
+
+	m_RegisterAF.lo = 0;
+
+	if (reg == 0)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
+
+	if (newCarry)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+}
+
+// SRA n Shift n right into carry. MSB doesn't change
+void Emulator::CPU_SRA(BYTE& reg)
+{
+	bool carryBit = ISBITSET(reg, 0);
+	bool MSB = ISBITSET(reg, 7);
+
+	reg >>= 1;
+
+	if (MSB)
+		reg = SETBIT(reg, 7);
+
+	m_RegisterAF.lo = 0;
+
+	if (reg == 0)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
+
+	if (carryBit)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+}
+
+void Emulator::CPU_SLA(BYTE& reg)
+{
+	bool carryBit = ISBITSET(reg, 7);
+
+	reg <<= 1;
+
+	m_RegisterAF.lo = 0;
+
+	if (reg == 0)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
+
+	if (carryBit)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+}
+
+// This is copy pasted from codeslinger.co.uk implementation. Gonna be honest, don't know whats going on here.
+void Emulator::CPU_DAA()
+{
+
+	if (ISBITSET(m_RegisterAF.lo, FLAG_N))
+	{
+		if ((m_RegisterAF.hi & 0x0F) >0x09 || m_RegisterAF.lo & 0x20)
+		{
+			m_RegisterAF.hi -= 0x06; //Half borrow: (0-1) = (0xF-0x6) = 9
+			if ((m_RegisterAF.hi & 0xF0) == 0xF0) m_RegisterAF.lo |= 0x10; else m_RegisterAF.lo &= ~0x10;
+		}
+
+		if ((m_RegisterAF.hi & 0xF0)>0x90 || m_RegisterAF.lo & 0x10) m_RegisterAF.hi -= 0x60;
+	}
+	else
+	{
+		if ((m_RegisterAF.hi & 0x0F)>9 || m_RegisterAF.lo & 0x20)
+		{
+			m_RegisterAF.hi += 0x06; //Half carry: (9+1) = (0xA+0x6) = 10
+			if ((m_RegisterAF.hi & 0xF0) == 0) m_RegisterAF.lo |= 0x10; else m_RegisterAF.lo &= ~0x10;
+		}
+
+		if ((m_RegisterAF.hi & 0xF0)>0x90 || m_RegisterAF.lo & 0x10) m_RegisterAF.hi += 0x60;
+	}
+
+	if (m_RegisterAF.hi == 0) m_RegisterAF.lo |= 0x80; else m_RegisterAF.lo &= ~0x80;
 }

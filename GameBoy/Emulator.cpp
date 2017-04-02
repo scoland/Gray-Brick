@@ -28,7 +28,7 @@ void Emulator::loadRom()
 	FILE * in;
 
 	// open file, flag 'rb' means 'read binary'
-	in = fopen("05.gb", "rb");
+	in = fopen("08.gb", "rb");
 
 	// Put rom into memory
 	fread(m_CartridgeMemory, 1, 0x200000, in);
@@ -745,7 +745,9 @@ int Emulator::executeNextOpcode()
 
 int Emulator::executeOpcode(BYTE opcode)
 {
-	// std::cout << "A:" << std::setfill('0') << std::setw(4) << m_RegisterAF.reg << " " << debugFlags(m_RegisterAF.lo) << " BC:" << std::setfill('0') << std::setw(4) << m_RegisterBC.reg << " DE:" << std::setfill('0') << std::setw(4) << m_RegisterDE.reg << " HL:" << std::setfill('0') << std::setw(4) << m_RegisterHL.reg << " PC:" << std::setfill('0') << std::setw(4) << (m_ProgramCounter - 1) << " " << opcode_names[opcode] << " : 0x" << std::hex << static_cast<int>(opcode) << std::endl;
+	// if (opcode != 0xcb)
+		// std::cout << "A:" << std::setfill('0') << std::setw(4) << m_RegisterAF.reg << " " << debugFlags(m_RegisterAF.lo) << " BC:" << std::setfill('0') << std::setw(4) << m_RegisterBC.reg << " DE:" << std::setfill('0') << std::setw(4) << m_RegisterDE.reg << " HL:" << std::setfill('0') << std::setw(4) << m_RegisterHL.reg << " PC:" << std::setfill('0') << std::setw(4) << (m_ProgramCounter - 1) << " " << opcode_names[opcode] << " : 0x" << std::hex << static_cast<int>(opcode) << std::endl;
+
 	switch (opcode)
 	{
 	case 0x00: return opcode_00();
@@ -760,7 +762,7 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0x08:
 	{
 		WORD nn = readWord();
-		m_ProgramCounter++;
+		m_ProgramCounter += 2;
 
 		writeMemory(nn, m_StackPointer.lo);
 		nn++;
@@ -806,6 +808,7 @@ int Emulator::executeOpcode(BYTE opcode)
 	case 0x24: return opcode_24();
 	case 0x25: return opcode_25();
 	case 0x26: return opcode_26();
+	case 0x27: return opcode_27();
 	case 0x28: return opcode_28();
 	case 0x29: return opcode_29();
 	case 0x2A: return opcode_2A();
@@ -1119,11 +1122,32 @@ WORD Emulator::popWordOffStack()
 int Emulator::executeExtendedOpcode()
 {
 	BYTE opcode = readMemory(m_ProgramCounter);
+	// std::cout << "A:" << std::setfill('0') << std::setw(4) << m_RegisterAF.reg << " " << debugFlags(m_RegisterAF.lo) << " BC:" << std::setfill('0') << std::setw(4) << m_RegisterBC.reg << " DE:" << std::setfill('0') << std::setw(4) << m_RegisterDE.reg << " HL:" << std::setfill('0') << std::setw(4) << m_RegisterHL.reg << " PC:" << std::setfill('0') << std::setw(4) << (m_ProgramCounter - 1) << " " << opcode_names[opcode] << " : 0x" << std::hex << static_cast<int>(opcode) << std::endl;
 	m_ProgramCounter++;
 
-	// std::cout << "A:" << std::setfill('0') << std::setw(4) << m_RegisterAF.reg << " " << debugFlags(m_RegisterAF.lo) << " BC:" << std::setfill('0') << std::setw(4) << m_RegisterBC.reg << " DE:" << std::setfill('0') << std::setw(4) << m_RegisterDE.reg << " HL:" << std::setfill('0') << std::setw(4) << m_RegisterHL.reg << " PC:" << std::setfill('0') << std::setw(4) << (m_ProgramCounter - 1) << " " << opcode_names[opcode] << " : 0x" << std::hex << static_cast<int>(opcode) << std::endl;
 	switch (opcode)
 	{
+	case 0x00: return opcode_CB_00();
+	case 0x01: return opcode_CB_01();
+	case 0x02: return opcode_CB_02();
+	case 0x03: return opcode_CB_03();
+	case 0x04: return opcode_CB_04();
+	case 0x05: return opcode_CB_05();
+	case 0x07: return opcode_CB_07();
+	case 0x08: return opcode_CB_08();
+	case 0x09: return opcode_CB_09();
+	case 0x10: return opcode_CB_10();
+	case 0x11: return opcode_CB_11();
+	case 0x12: return opcode_CB_12();
+	case 0x13: return opcode_CB_13();
+	case 0x14: return opcode_CB_14();
+	case 0x15: return opcode_CB_15();
+	case 0x17: return opcode_CB_17();
+	case 0x0A: return opcode_CB_0A();
+	case 0x0B: return opcode_CB_0B();
+	case 0x0C: return opcode_CB_0C();
+	case 0x0D: return opcode_CB_0D();
+	case 0x0F: return opcode_CB_0F();
 	case 0x18: return opcode_CB_18();
 	case 0x19: return opcode_CB_19();
 	case 0x1A: return opcode_CB_1A();
@@ -1132,6 +1156,20 @@ int Emulator::executeExtendedOpcode()
 	case 0x1D: return opcode_CB_1D();
 	case 0x1E: return opcode_CB_1E();
 	case 0x1F: return opcode_CB_1F();
+	case 0x20: return opcode_CB_20();
+	case 0x21: return opcode_CB_21();
+	case 0x22: return opcode_CB_22();
+	case 0x23: return opcode_CB_23();
+	case 0x24: return opcode_CB_24();
+	case 0x25: return opcode_CB_25();
+	case 0x27: return opcode_CB_27();
+	case 0x28: return opcode_CB_28();
+	case 0x29: return opcode_CB_29();
+	case 0x2A: return opcode_CB_2A();
+	case 0x2B: return opcode_CB_2B();
+	case 0x2C: return opcode_CB_2C();
+	case 0x2D: return opcode_CB_2D();
+	case 0x2F: return opcode_CB_2F();
 	case 0x37: return opcode_CB_37();
 	case 0x30: return opcode_CB_30();
 	case 0x31: return opcode_CB_31();
@@ -1140,6 +1178,12 @@ int Emulator::executeExtendedOpcode()
 	case 0x34: return opcode_CB_34();
 	case 0x35: return opcode_CB_35();
 	case 0x38: return opcode_CB_38();
+	case 0x39: return opcode_CB_39();
+	case 0x3A: return opcode_CB_3A();
+	case 0x3B: return opcode_CB_3B();
+	case 0x3C: return opcode_CB_3C();
+	case 0x3D: return opcode_CB_3D();
+	case 0x3F: return opcode_CB_3F();
 	default:
 		std::cout << "Extended opcode not found : " << std::hex << opcode << std::endl;
 		return 0;

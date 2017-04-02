@@ -106,10 +106,11 @@ private:
 	void CPU_JUMP_IMMEDIATE(bool useCondition, int flag, bool condition);
 	void CPU_RETURN(bool useCondition, int flag, bool condition);
 	void CPU_STACK_PUSH(WORD val);
-	void CPU_STACK_POP(WORD& reg);
+	void CPU_STACK_POP(WORD& reg, bool isAF);
 	void CPU_LD_I(BYTE& reg, WORD& address);
 	void CPU_8BIT_SUB(BYTE& reg, BYTE subtracting, bool useImmediate, bool subCarry);
-	void CPU_RRC(BYTE& reg);
+	void CPU_RR(BYTE& reg, bool setZ);
+	void CPU_RL(BYTE& reg);
 	void CPU_RRC_MEMORY(WORD address);
 	void CPU_ADC(BYTE toAdd);
 	void CPU_8BIT_ADD(BYTE& reg, BYTE toAdd, bool useImmediate, bool addCarry);
@@ -121,16 +122,22 @@ private:
 	void CPU_AND(BYTE val, bool useImmediate);
 
 	void CPU_SRL(BYTE& reg);
+	void CPU_SRA(BYTE& reg);
+	void CPU_SLA(BYTE& reg);
 	void CPU_RESTART(BYTE address);
 	void CPU_RCLA();
+	void CPU_RLC(BYTE& reg);
 	void CPU_SET_CARRY_FLAG();
 	void CPU_COMPLEMENT_CARRY_FLAG();
 
 	void CPU_ADD_SP();
 
+	void CPU_DAA();
+
 	// Rotates
 	void CPU_RLA();
 	void CPU_RRCA();
+	void CPU_RRC(BYTE& reg);
 	
 	BYTE get_byte_from_pc();
 	WORD get_word_from_pc();

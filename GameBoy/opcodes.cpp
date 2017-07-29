@@ -267,6 +267,7 @@ void Emulator::CPU_8BIT_SUB(BYTE& reg, BYTE subtracting, bool useImmediate, bool
 {
 	BYTE initial = reg;
 	BYTE toSubtract = 0;
+	BYTE carryVal = 0;
 
 	// We can either use an immediate value or another register
 	if (useImmediate)
@@ -279,8 +280,13 @@ void Emulator::CPU_8BIT_SUB(BYTE& reg, BYTE subtracting, bool useImmediate, bool
 	{
 		toSubtract = subtracting;
 	}
+
+	if (subCarry) {
+		if (ISBITSET(m_RegisterAF.lo, FLAG_C))
+			carryVal = 1;
+	}
 	
-	reg -= toSubtract;
+	reg = (reg - toSubtract - carryVal);
 
 	// reset flags
 	m_RegisterAF.lo = 0;
@@ -291,14 +297,10 @@ void Emulator::CPU_8BIT_SUB(BYTE& reg, BYTE subtracting, bool useImmediate, bool
 	m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_N);
 
 	// set if no borrow
-	if (initial < toSubtract)
+	if ((initial - toSubtract - carryVal) < 0)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
 
-
-	SIGNED_WORD htest = (initial & 0xF);
-	htest -= (toSubtract & 0xF);
-
-	if (htest < 0)
+	if (((initial & 0xf) - (toSubtract & 0xf) - carryVal) < 0)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_H);
 }
 
@@ -439,6 +441,7 @@ void Emulator::CPU_8BIT_ADD(BYTE& reg, BYTE toAdd, bool useImmediate, bool addCa
 {
 	BYTE initial = reg;
 	BYTE adding = 0;
+	BYTE carryVal = 0;
 
 	if (!useImmediate)
 	{
@@ -455,10 +458,10 @@ void Emulator::CPU_8BIT_ADD(BYTE& reg, BYTE toAdd, bool useImmediate, bool addCa
 	{
 		// if the carry flag is set, add 1
 		if (ISBITSET(m_RegisterAF.lo, FLAG_C))
-			adding++;
+			carryVal = 1;
 	}
 
-	reg += adding;
+	reg += (adding + carryVal);
 
 	// set the flags
 	m_RegisterAF.lo = 0;
@@ -466,13 +469,12 @@ void Emulator::CPU_8BIT_ADD(BYTE& reg, BYTE toAdd, bool useImmediate, bool addCa
 	if (reg == 0)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
 
-	WORD htest = (initial & 0xF);
-	htest += (adding & 0xF);
+	bool halfCarry = (((initial & 0xf) + (adding & 0xf) + carryVal) & 0x10) == 0x10;
 
-	if (htest > 0xF)
+	if (halfCarry)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_H);
 
-	if ((initial + adding) > 0xFF)
+	if ((initial + adding + carryVal) > 0xFF)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
 }
 
@@ -495,6 +497,7 @@ void Emulator::CPU_CP(BYTE reg, BYTE toCompare, bool useImmediate)
 
 	reg -= toSubtract;
 
+	// reset flags
 	m_RegisterAF.lo = 0;
 
 	if (reg == 0)
@@ -506,11 +509,9 @@ void Emulator::CPU_CP(BYTE reg, BYTE toCompare, bool useImmediate)
 	if (initial < toSubtract)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
 
-	SIGNED_WORD htest = initial & 0xF;
-	htest -= (toSubtract & 0xF);
-
-	if (htest < 0)
+	if (((initial & 0xf) - (toSubtract & 0xf)) < 0)
 		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_H);
+
 }
 
 void Emulator::CPU_SRL(BYTE& reg)

@@ -28,7 +28,7 @@ void Emulator::loadRom()
 	FILE * in;
 
 	// open file, flag 'rb' means 'read binary'
-	in = fopen("08.gb", "rb");
+	in = fopen("04.gb", "rb");
 
 	// Put rom into memory
 	fread(m_CartridgeMemory, 1, 0x200000, in);
@@ -745,8 +745,8 @@ int Emulator::executeNextOpcode()
 
 int Emulator::executeOpcode(BYTE opcode)
 {
-	// if (opcode != 0xcb)
-		// std::cout << "A:" << std::setfill('0') << std::setw(4) << m_RegisterAF.reg << " " << debugFlags(m_RegisterAF.lo) << " BC:" << std::setfill('0') << std::setw(4) << m_RegisterBC.reg << " DE:" << std::setfill('0') << std::setw(4) << m_RegisterDE.reg << " HL:" << std::setfill('0') << std::setw(4) << m_RegisterHL.reg << " PC:" << std::setfill('0') << std::setw(4) << (m_ProgramCounter - 1) << " " << opcode_names[opcode] << " : 0x" << std::hex << static_cast<int>(opcode) << std::endl;
+	//if (opcode != 0xcb)
+		//std::cout << "A:" << std::setfill('0') << std::setw(4) << m_RegisterAF.reg << " " << debugFlags(m_RegisterAF.lo) << " BC:" << std::setfill('0') << std::setw(4) << m_RegisterBC.reg << " DE:" << std::setfill('0') << std::setw(4) << m_RegisterDE.reg << " HL:" << std::setfill('0') << std::setw(4) << m_RegisterHL.reg << " PC:" << std::setfill('0') << std::setw(4) << (m_ProgramCounter - 1) << " " << opcode_names[opcode] << " : 0x" << std::hex << static_cast<int>(opcode) << std::endl;
 
 	switch (opcode)
 	{
@@ -1122,7 +1122,7 @@ WORD Emulator::popWordOffStack()
 int Emulator::executeExtendedOpcode()
 {
 	BYTE opcode = readMemory(m_ProgramCounter);
-	// std::cout << "A:" << std::setfill('0') << std::setw(4) << m_RegisterAF.reg << " " << debugFlags(m_RegisterAF.lo) << " BC:" << std::setfill('0') << std::setw(4) << m_RegisterBC.reg << " DE:" << std::setfill('0') << std::setw(4) << m_RegisterDE.reg << " HL:" << std::setfill('0') << std::setw(4) << m_RegisterHL.reg << " PC:" << std::setfill('0') << std::setw(4) << (m_ProgramCounter - 1) << " " << opcode_names[opcode] << " : 0x" << std::hex << static_cast<int>(opcode) << std::endl;
+	//std::cout << "A:" << std::setfill('0') << std::setw(4) << m_RegisterAF.reg << " " << debugFlags(m_RegisterAF.lo) << " BC:" << std::setfill('0') << std::setw(4) << m_RegisterBC.reg << " DE:" << std::setfill('0') << std::setw(4) << m_RegisterDE.reg << " HL:" << std::setfill('0') << std::setw(4) << m_RegisterHL.reg << " PC:" << std::setfill('0') << std::setw(4) << (m_ProgramCounter - 1) << " " << opcode_names[opcode] << " : 0x" << std::hex << static_cast<int>(opcode) << std::endl;
 	m_ProgramCounter++;
 
 	switch (opcode)

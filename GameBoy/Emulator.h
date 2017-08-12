@@ -130,9 +130,16 @@ private:
 	void CPU_SET_CARRY_FLAG();
 	void CPU_COMPLEMENT_CARRY_FLAG();
 
+	void CPU_BIT(int bit, BYTE reg);
+	void CPU_RESET_BIT(int bit, BYTE& reg);
+	void CPU_RESET_BIT_MEMORY(int bit, WORD address);
+	void CPU_SET_BIT(int bit, BYTE& reg);
+	void CPU_SET_BIT_MEMORY(int bit, WORD address);
+
 	void CPU_ADD_SP();
 
 	void CPU_DAA();
+
 
 	// Rotates
 	void CPU_RLA();

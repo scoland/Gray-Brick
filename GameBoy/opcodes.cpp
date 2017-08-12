@@ -741,7 +741,7 @@ void Emulator::CPU_SLA(BYTE& reg)
 // This is copy pasted from codeslinger.co.uk implementation. Gonna be honest, don't know whats going on here.
 void Emulator::CPU_DAA()
 {
-
+	/*
 	if (ISBITSET(m_RegisterAF.lo, FLAG_N))
 	{
 		if ((m_RegisterAF.hi & 0x0F) >0x09 || m_RegisterAF.lo & 0x20)
@@ -764,4 +764,76 @@ void Emulator::CPU_DAA()
 	}
 
 	if (m_RegisterAF.hi == 0) m_RegisterAF.lo |= 0x80; else m_RegisterAF.lo &= ~0x80;
+	*/
+	BYTE reg = m_RegisterAF.hi;
+
+	BYTE correction = ISBITSET(m_RegisterAF.lo, FLAG_C) ? 0x60 : 0x00;
+
+	if (ISBITSET(m_RegisterAF.lo, FLAG_H) || (!ISBITSET(m_RegisterAF.lo, FLAG_N) && ((reg & 0x0F) > 9))) 
+	{
+		correction |= 0x06;
+	}
+
+	if (ISBITSET(m_RegisterAF.lo, FLAG_C) || (!ISBITSET(m_RegisterAF.lo, FLAG_N) && (reg > 0x99))) 
+	{
+		correction |= 0x60;
+	}
+
+	if (ISBITSET(m_RegisterAF.lo, FLAG_N)) 
+	{
+		reg -= correction;
+	}
+	else 
+	{
+		reg += correction;
+	}
+
+	if (((correction << 2) & 0x100) != 0) 
+	{
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_C);
+	}
+
+	m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_H);
+
+	m_RegisterAF.hi = (reg & 0xFF);
+
+	if (reg == 0)
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
+	else
+		m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_Z);
+
+
+}
+
+// BIT b, r
+// No pass by reference, doesn't actually change the register
+void Emulator::CPU_BIT(int bit, BYTE reg) {
+	m_RegisterAF.lo = CLEARBIT(m_RegisterAF.lo, FLAG_N);
+
+	m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_H);
+	
+	// FLAG_Z is set if bit is 0
+	if (!ISBITSET(reg, bit)) {
+		m_RegisterAF.lo = SETBIT(m_RegisterAF.lo, FLAG_Z);
+	}
+};
+
+void Emulator::CPU_RESET_BIT(int bit, BYTE& reg) {
+	reg = CLEARBIT(bit, reg);
+}
+
+void Emulator::CPU_RESET_BIT_MEMORY(int bit, WORD address) {
+	BYTE mem = readMemory(address);
+	mem = CLEARBIT(bit, mem);
+	writeMemory(address, mem);
+}
+
+void Emulator::CPU_SET_BIT(int bit, BYTE& reg) {
+	reg = SETBIT(bit, reg);
+}
+
+void Emulator::CPU_SET_BIT_MEMORY(int bit, WORD address) {
+	BYTE mem = readMemory(address);
+	mem = SETBIT(bit, mem);
+	writeMemory(address, mem);;
 }

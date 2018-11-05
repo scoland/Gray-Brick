@@ -85,6 +85,12 @@ private:
 	void drawScanLine();
 	void renderTiles();
 
+	// Joypad
+	void keyPressed(int key);
+	void keyReleased(int key);
+	BYTE Emulator::getJoypadState() const;
+	BYTE m_JoypadState;
+
 	// CPU
 	int executeNextOpcode();
 	int executeOpcode(BYTE opcode);
@@ -140,7 +146,6 @@ private:
 
 	void CPU_DAA();
 
-
 	// Rotates
 	void CPU_RLA();
 	void CPU_RRCA();
@@ -182,7 +187,6 @@ private:
 	bool m_MBC1;
 	bool m_MBC2;
 
-
 	int m_ScanlineCounter;
 
 	// Which rom bank is currently loaded into memory space 0x4000-0x7FFF
@@ -203,6 +207,8 @@ private:
 
 	// IME interrupt master enable flag
 	bool m_InterruptMaster;
+	bool m_PendingInterruptEnabled;
+	bool m_PendingInterruptDisabled;
 
 	// No-op
 	void NOP();

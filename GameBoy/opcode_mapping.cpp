@@ -248,14 +248,14 @@ int Emulator::opcode_EE() { CPU_8BIT_XOR(m_RegisterAF.hi, 0, true); return 8; }
 int Emulator::opcode_EF() { CPU_RESTART(0x28); return 32; }
 int Emulator::opcode_F1() { CPU_STACK_POP(m_RegisterAF.reg, true); return 12; }
 int Emulator::opcode_F2() { CPU_REG_LOAD_ROM(m_RegisterAF.hi, (0xFF00 + m_RegisterBC.lo)); return 8; }
-int Emulator::opcode_F3() { m_InterruptMaster = false; return 4; }
+int Emulator::opcode_F3() { m_PendingInterruptDisabled = true; return 4; }
 int Emulator::opcode_F5() { CPU_STACK_PUSH(m_RegisterAF.reg); return 16; }
 int Emulator::opcode_F6() { CPU_8BIT_OR(m_RegisterAF.hi, 0, true); return 8; }
 int Emulator::opcode_F7() { CPU_RESTART(0x30); return 32; }
 
 int Emulator::opcode_F9() { m_StackPointer.reg = m_RegisterHL.reg; return 8; }
 
-int Emulator::opcode_FB() { m_InterruptMaster = true; return 4; }
+int Emulator::opcode_FB() { m_PendingInterruptEnabled = true; return 4; }
 int Emulator::opcode_FE() { CPU_CP(m_RegisterAF.hi, 0, true); return 8; }
 
 int Emulator::opcode_FF() { CPU_RESTART(0x38); return 32; }

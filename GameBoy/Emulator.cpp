@@ -28,7 +28,7 @@ void Emulator::loadRom()
 	FILE * in;
 
 	// open file, flag 'rb' means 'read binary'
-	in = fopen("01.gb", "rb");
+	in = fopen("09.gb", "rb");
 
 	// Put rom into memory
 	fread(m_CartridgeMemory, 1, 0x200000, in);
@@ -51,9 +51,9 @@ void Emulator::update()
 		// Timer and graphics are passed the number of cycles the opcode took to execute
 		// This is so they can update at the same rate as the CPU
 		updateTimers(cycles);
-		// updateGraphics(cycles);
+		updateGraphics(cycles);
 
-		// executeInterrupts();
+		executeInterrupts();
 	}
 	int test;
 
@@ -64,6 +64,8 @@ void Emulator::update()
 void Emulator::resetCPU()
 {
 	m_InterruptMaster = false;
+	m_PendingInterruptDisabled = false;
+	m_PendingInterruptEnabled = false;
 
 	m_ProgramCounter = 0x100;
 	m_RegisterAF.reg = 0x01B0;
@@ -71,6 +73,8 @@ void Emulator::resetCPU()
 	m_RegisterDE.reg = 0x00D8;
 	m_RegisterHL.reg = 0x014D;
 	m_StackPointer.reg = 0xFFFE;
+
+	m_JoypadState = 0xFF;
 
 	m_ScanlineCounter = 456;
 
@@ -235,6 +239,9 @@ BYTE Emulator::readMemory(WORD address) const
 	{
 		return 0;
 	}
+	else if (address == 0xFF00) {
+		return getJoypadState();
+	}
 	// Otherwise, just return that location in memory
 	return m_Rom[address];
 }
@@ -380,11 +387,11 @@ void Emulator::updateTimers(int cycles)
 			if (readMemory(TIMA) == 255)
 			{
 				writeMemory(TIMA, readMemory(TMA));
-				requestInterrupt(2);
+requestInterrupt(2);
 			}
 			else
 			{
-				writeMemory(TIMA, readMemory(TIMA) + 1);
+			writeMemory(TIMA, readMemory(TIMA) + 1);
 			}
 		}
 	}
@@ -408,10 +415,10 @@ void Emulator::setClockFreq()
 	BYTE freq = getClockFreq();
 	switch (freq)
 	{
-		case 0: m_TimerCounter = 1024; break; // freq 4096
-		case 1: m_TimerCounter = 16; break;// freq 262144
-		case 2: m_TimerCounter = 64; break;// freq 65536
-		case 3: m_TimerCounter = 256; break;// freq 16382
+	case 0: m_TimerCounter = 1024; break; // freq 4096
+	case 1: m_TimerCounter = 16; break;// freq 262144
+	case 2: m_TimerCounter = 64; break;// freq 65536
+	case 3: m_TimerCounter = 256; break;// freq 16382
 	}
 }
 
@@ -466,14 +473,77 @@ void Emulator::serviceInterrupt(int interrupt)
 
 	// we must save the current execution address by pushing it onto the stack
 	pushWordOntoStack(m_ProgramCounter);
-	
+
 	switch (interrupt)
 	{
-		case 0: m_ProgramCounter = 0x40; break;
-		case 1: m_ProgramCounter = 0x48; break;
-		case 2: m_ProgramCounter = 0x50; break;
-		case 4: m_ProgramCounter = 0x60; break;
+	case 0: m_ProgramCounter = 0x40; break;
+	case 1: m_ProgramCounter = 0x48; break;
+	case 2: m_ProgramCounter = 0x50; break;
+	case 4: m_ProgramCounter = 0x60; break;
 	}
+}
+
+void Emulator::keyPressed(int key) {
+	bool previouslyUnset = false;
+
+	// If we're setting from 1 to 0 we may have to request an interrupt
+	if (ISBITSET(m_JoypadState, key) == false) {
+		previouslyUnset = true;
+	}
+
+	// A pressed key has state 0, so set key to 0
+	m_JoypadState = CLEARBIT(m_JoypadState, key);
+
+	bool button = true;
+
+	// Standard button or d pad?
+	if (key > 3) {
+		button = true;
+	}
+	else {
+		button = false;
+	}
+
+	BYTE keyReq = m_Rom[0xFF00];
+	bool shouldRequestInterrupt = false;
+
+	// only request an interrupt if the button just pressed is one the game cares about
+	if (button && !ISBITSET(keyReq, 5)) {
+		shouldRequestInterrupt = true;
+	}
+	else if (!button && !ISBITSET(keyReq, 4)) {
+		shouldRequestInterrupt = true;
+	}
+
+	if (shouldRequestInterrupt && !previouslyUnset) {
+		requestInterrupt(4);
+	}
+}
+
+void Emulator::keyReleased(int key) {
+	m_JoypadState = SETBIT(m_JoypadState, key);
+}
+
+BYTE Emulator::getJoypadState() const {
+	BYTE res = m_Rom[0xFF00];
+
+	// Flip all the bits
+	res ^= 0xFF;
+
+	// are we interested in the standard buttons?
+	if (!ISBITSET(res, 4))
+	{
+		BYTE topJoypad = m_JoypadState >> 4;
+		topJoypad |= 0xF0; // turn the top 4 bits on
+		res &= topJoypad; // show what buttons are pressed
+	}
+	else if (!ISBITSET(res, 5)) // directional buttons
+	{
+		BYTE bottomJoypad = m_JoypadState & 0xF;
+		bottomJoypad |= 0xF0;
+		res &= bottomJoypad;
+	}
+	return res;
 }
 
 void Emulator::updateGraphics(int cycles)
@@ -724,12 +794,6 @@ void Emulator::drawScanLine()
 		tileNum = (SIGNED_BYTE)readMemory(tileAddress);
 
 	// deduce where this tile location is in memory.
-	WORD tileLocation = tileData;
-
-	if (unsig)
-		tileLocation += (tileNum * 16);
-	else
-		tileLocation += ((tileNum + 128) * 16);
 }
 
 */
@@ -740,6 +804,21 @@ int Emulator::executeNextOpcode()
 	BYTE opcode = readMemory(m_ProgramCounter);
 	m_ProgramCounter++;
 	res = executeOpcode(opcode);
+
+	if (m_PendingInterruptDisabled) {
+		if (readMemory(m_ProgramCounter - 1) != 0xF3) {
+			m_PendingInterruptDisabled = false;
+			m_InterruptMaster = false;
+		}
+	}
+
+	if (m_PendingInterruptEnabled) {
+		if (readMemory(m_ProgramCounter - 1) != 0xFB) {
+			m_PendingInterruptEnabled = false;
+			m_InterruptMaster = true;
+		}
+	}
+
 	return res;
 }
 
